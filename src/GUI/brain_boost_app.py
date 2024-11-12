@@ -1,6 +1,7 @@
 from kivy.app import App
 from kivy.uix.screenmanager import ScreenManager
-from src.GUI.authorization import MenuScreen, LoginScreen
+from src.GUI.authorization import LoginScreen
+from src.GUI.menu import MenuScreen
 
 class NavigationManager(ScreenManager):
     def __init__(self, **kwargs):
