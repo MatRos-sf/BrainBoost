@@ -61,16 +61,12 @@ class LoginScreen(Screen):
 
     def authorization(self, instance):
         # TODO: authorization
-        self.login_button.disabled = True
-        if self.user_field.text == "admin" and self.password_field.text == "admin":
-            self.manager.go_to_screen("menu")
-        else:
-            self.info_label.text = "Invalid credentials, try again"
-            self.login_button.disabled = False
+        raise NotImplementedError()
 
     def create_account(self, instance):
-        self.info_label.text = "Function is not available"
         #TODO: create account
+        raise NotImplementedError()
+
 
 
 
