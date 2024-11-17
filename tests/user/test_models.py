@@ -37,6 +37,8 @@ class TestUser:
         user = User(username="newuser", password="password123")
         session.add(user)
         session.commit()
+        # get the user from the database
+        user = session.query(User).filter_by(id=user.id).one()
 
         assert user.id is not None
         assert user.username == "newuser"
@@ -56,7 +58,8 @@ class TestUser:
         login = Login(user=user)
         session.add(login)
         session.commit()
-
+        # get the user from the database
+        user = session.query(User).filter_by(id=user.id).one()
         assert len(user.logins) == 1
         assert user.logins[0].user_id == user.id
         assert isinstance(user.logins[0].login_date, datetime)
