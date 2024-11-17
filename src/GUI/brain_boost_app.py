@@ -1,7 +1,9 @@
 from kivy.app import App
 from kivy.uix.screenmanager import ScreenManager
-from src.GUI.authorization import LoginScreen
-from src.GUI.menu import MenuScreen
+
+from .authorization import LoginScreen
+from .menu import MenuScreen
+
 
 class MyApp(App):
     def build(self):
@@ -10,6 +12,7 @@ class MyApp(App):
         sm.add_widget(MenuScreen(name="menu"))
         sm.current = "login"
         return sm
+
 
 if __name__ == "__main__":
     MyApp().run()
