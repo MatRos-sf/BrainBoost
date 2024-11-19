@@ -58,7 +58,6 @@ class LoginScreen(Screen):
         self.add_widget(self.layout)
 
     def authorization(self, instance):
-        # TODO: authorization
         username = self.user_field.text.strip()
         password = self.password_field.text
 
