@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import sessionmaker
 
 from ..models import ModelBase
 
@@ -13,5 +13,5 @@ def engine(database_url=DATABASE_URL):
 
 
 def session(engine):
-    with Session(engine) as s:
-        yield s
+    Session = sessionmaker(bind=engine)
+    return Session()
