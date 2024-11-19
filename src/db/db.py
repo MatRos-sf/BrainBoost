@@ -13,4 +13,5 @@ def engine(database_url=DATABASE_URL):
 
 
 def session(engine):
-    return Session(engine)
+    with Session(engine) as s:
+        yield s
