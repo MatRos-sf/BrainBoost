@@ -4,14 +4,15 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
-from src.user.models import Base, Login, User
+from src.models import ModelBase
+from src.models.user import Login, User
 
 
 @pytest.fixture(scope="function")
 def engine():
     """Create a fresh in-memory database for each test."""
     engine = create_engine("sqlite:///:memory:")
-    Base.metadata.create_all(engine)
+    ModelBase.metadata.create_all(engine)
     return engine
 
 
