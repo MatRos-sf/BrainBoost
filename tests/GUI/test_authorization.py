@@ -3,27 +3,25 @@ from unittest.mock import MagicMock, patch
 import pytest
 from kivy.tests.common import GraphicUnitTest
 from kivy.uix.button import Button
+from kivy.uix.checkbox import CheckBox
 from kivy.uix.label import Label
 from kivy.uix.screenmanager import Screen, ScreenManager
 from kivy.uix.textinput import TextInput
 
-from src.GUI.authorization import CreateAccountScreen, LoginScreen
+from src.GUI.authorization import CreateAccountScreen, LoginScreen, MessagePopup
 
 
 class TestLoginScreen(GraphicUnitTest):
     def setUp(self):
         super(TestLoginScreen, self).setUp()
-        self.screen_manager = ScreenManager()
-        # Create a mock session
-        self.mock_session = MagicMock()
-
-        # Add all necessary screens
-        self.login_screen = LoginScreen(session=self.mock_session, name="login")
+        self.session = MagicMock()
+        self.login_screen = LoginScreen(session=self.session, name="login")
         self.create_account_screen = CreateAccountScreen(
-            session=self.mock_session, name="create_account"
+            session=self.session, name="create_account"
         )
         self.menu_screen = Screen(name="menu")  # Mock menu screen
 
+        self.screen_manager = ScreenManager()
         self.screen_manager.add_widget(self.login_screen)
         self.screen_manager.add_widget(self.create_account_screen)
         self.screen_manager.add_widget(self.menu_screen)
@@ -37,27 +35,65 @@ class TestLoginScreen(GraphicUnitTest):
         assert isinstance(self.login_screen.password_field, TextInput)
         assert isinstance(self.login_screen.login_button, Button)
         assert isinstance(self.login_screen.create_button, Button)
+        assert isinstance(self.login_screen.remember_me, CheckBox)
 
-    def test_create_account_button_changes_screen(self):
-        """Test that create account button changes screen to create_account"""
-        # Set current screen to login
-        self.screen_manager.current = "login"
+    @patch("pathlib.Path.exists")
+    @patch("builtins.open")
+    def test_load_credentials(self, mock_open, mock_exists):
+        """Test loading saved credentials"""
+        # Mock the file operations
+        mock_exists.return_value = True
+        mock_file = MagicMock()
+        mock_file.__enter__.return_value.read.return_value = '{"username": "test_user"}'
+        mock_open.return_value = mock_file
 
-        # Click create account button
-        create_button = self.login_screen.create_button
-        create_button.dispatch("on_press")
+        # Call load_credentials
+        self.login_screen.load_credentials()
 
-        # Verify screen changed
-        self.assertEqual(self.screen_manager.current, "create_account")
+        # Check if credentials were loaded
+        assert self.login_screen.user_field.text == "test_user"
+        assert self.login_screen.remember_me.active is True
+
+    @patch("pathlib.Path.mkdir")
+    @patch("builtins.open")
+    def test_save_credentials(self, mock_open, mock_mkdir):
+        """Test saving credentials"""
+        username = "test_user"
+        password = "test_pass"
+
+        # Call save_credentials
+        self.login_screen.save_credentials(username, password)
+
+        # Verify mkdir was called
+        mock_mkdir.assert_called_once_with(exist_ok=True)
+
+        # Verify file was written
+        mock_open.assert_called_once()
+
+    def test_show_message(self):
+        """Test that show_message creates and shows a popup"""
+        title = "Test Title"
+        message = "Test Message"
+
+        # Show message
+        self.login_screen.show_message(title, message)
+
+        # Get the popup from the list
+        assert len(self.login_screen._popup) == 1
+        popup = self.login_screen._popup[0]
+
+        # Verify popup properties
+        assert isinstance(popup, MessagePopup)
+        assert popup.title == title
 
     @patch("src.GUI.authorization.verify_password")
-    def test_failed_login_shows_error(self, mock_verify):
-        """Test that failed login shows error message"""
+    def test_failed_login_shows_popup(self, mock_verify):
+        """Test that failed login shows error popup"""
         # Setup mocks
         mock_verify.return_value = False
         mock_user = MagicMock()
         mock_user.password = "stored_hash"
-        self.mock_session.query().filter_by().first.return_value = mock_user
+        self.session.query().filter_by().first.return_value = mock_user
 
         # Set test values
         self.login_screen.user_field.text = "test_user"
@@ -66,18 +102,23 @@ class TestLoginScreen(GraphicUnitTest):
         # Trigger login
         self.login_screen.login_button.dispatch("on_press")
 
-        # Check error message
-        self.assertEqual(self.login_screen.info_label.text, "Login failed!")
+        # Get the popup from the list
+        assert len(self.login_screen._popup) == 1
+        popup = self.login_screen._popup[0]
+
+        # Verify popup
+        assert isinstance(popup, MessagePopup)
+        assert popup.title == "Error"
         mock_verify.assert_called_once_with("stored_hash", "wrong_password")
 
     @patch("src.GUI.authorization.verify_password")
-    def test_successful_login_changes_screen(self, mock_verify):
-        """Test that successful login changes screen and shows success message"""
+    def test_successful_login_shows_popup(self, mock_verify):
+        """Test that successful login shows success popup"""
         # Setup mocks
         mock_verify.return_value = True
         mock_user = MagicMock()
         mock_user.password = "stored_hash"
-        self.mock_session.query().filter_by().first.return_value = mock_user
+        self.session.query().filter_by().first.return_value = mock_user
 
         # Set test values
         self.login_screen.user_field.text = "test_user"
@@ -89,10 +130,35 @@ class TestLoginScreen(GraphicUnitTest):
         # Trigger login
         self.login_screen.login_button.dispatch("on_press")
 
-        # Check success message and screen change
-        self.assertEqual(self.login_screen.info_label.text, "Login successful!")
-        self.assertEqual(self.screen_manager.current, "menu")
+        # Get the popup from the list
+        assert len(self.login_screen._popup) == 1
+        popup = self.login_screen._popup[0]
+
+        # Verify popup and screen change
+        assert isinstance(popup, MessagePopup)
+        assert popup.title == "Success"
+        assert self.screen_manager.current == "menu"
         mock_verify.assert_called_once_with("stored_hash", "correct_password")
+
+    @patch("src.GUI.authorization.verify_password")
+    def test_successful_login_clears_fields(self, mock_verify):
+        """Test that successful login clears input fields"""
+        # Setup mocks
+        mock_verify.return_value = True
+        mock_user = MagicMock()
+        mock_user.password = "stored_hash"
+        self.session.query().filter_by().first.return_value = mock_user
+
+        # Set test values
+        self.login_screen.user_field.text = "test_user"
+        self.login_screen.password_field.text = "correct_password"
+
+        # Trigger login
+        self.login_screen.login_button.dispatch("on_press")
+
+        # Verify fields are cleared
+        assert self.login_screen.user_field.text == ""
+        assert self.login_screen.password_field.text == ""
 
 
 class TestCreateAccountScreen:
