@@ -1,5 +1,5 @@
 import random
-from typing import List, Optional
+from typing import Generator, List, Optional
 
 
 class ResultKeeper:
@@ -94,32 +94,29 @@ class ResultKeeper:
             case "/":
                 return a // b
 
-    def run(self):
+    def run(self) -> Generator[tuple[str, bool], int, None]:
         self.create_payload()
         chars = self._set_math_char()
         payload = self.payload
         mistake_counter = 0
         a, b = payload[0], payload[1]
         result = self.calculate(a, b, chars[0])
-        answer = int(input(f"{a} {chars[0]} {b} = "))
 
+        answer = yield f"{a} {chars[0]} {b} = ", False
         while True:
             if answer == result:
                 break
             mistake_counter += 1
-            print("Wrong answer")
-            answer = int(input(f"{a} {chars[0]} {b} = "))
+            answer = yield f"{a} {chars[0]} {b} = ", False
+
         for index, no in enumerate(payload[2:], 1):
             a, b = answer, no
             result = self.calculate(a, b, chars[index])
-            answer = int(input(f"{chars[index]} {b} = "))
+            answer = yield f"{chars[index]} {b}", True
             while True:
                 if answer == result:
                     break
                 mistake_counter += 1
-                print("Wrong answer")
-                answer = int(input(f"{a} {chars[index]} {b} = "))
+                answer = yield f"{chars[index]} {b}", False
 
-
-a = ResultKeeper(1)
-a.run()
+        return False
