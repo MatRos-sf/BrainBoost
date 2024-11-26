@@ -1,210 +1,76 @@
-# from src.games.math import ResultKeeper
-import random
-from typing import Generator, List, Optional
-
 from kivy.clock import Clock
-from kivy.uix.gridlayout import GridLayout
-from kivy.uix.label import Label
+from kivy.lang import Builder
 from kivy.uix.screenmanager import Screen
-from kivy.uix.textinput import TextInput
 
+from src.games.math import ResultKeeper
 
-class ResultKeeper:
-    def __init__(self, level: int):
-        self.level = level
-        self.payload = []
-
-    def _set_math_char(
-        self,
-        math_char: Optional[List[str]] = None,
-        max_range: int = 10,
-    ) -> List[str]:
-        """Generate a sequence of mathematical operations that work with the given payload.
-
-        Args:
-            math_char (Optional[List[str]]): List of allowed mathematical operations. Defaults to ['+', '-', '*', '/']
-            max_range (int): Maximum allowed result value. Defaults to 10
-        Returns:
-            List[str]: List of mathematical operations
-
-        Raises:
-            ValueError: If payload is too short or no valid sequence of operations can be found
-        """
-        if not self.payload:
-            self.create_payload()
-
-        payload = self.payload
-        if len(payload) < 10:
-            raise ValueError("Payload must contain at least 10 numbers")
-
-        if math_char is None:
-            math_char = ["+", "-", "*", "/"]
-
-        result = []
-        chars = math_char[:]
-        r = payload[0]
-        i = 1
-
-        while i < 10:
-            temp_res = r
-            if not chars:
-                chars = math_char[:]
-                payload[i] = random.randint(1, max_range)  # Avoid 0 for division
-                continue
-
-            char = random.choice(chars)
-            valid_operation = True
-
-            match char:
-                case "+":
-                    temp_res = r + payload[i]
-                case "-":
-                    if r - payload[i] < 0:
-                        valid_operation = False
-                    else:
-                        temp_res = r - payload[i]
-                case "*":
-                    temp_res = r * payload[i]
-                case "/":
-                    if payload[i] == 0 or r % payload[i] != 0:
-                        valid_operation = False
-                    else:
-                        temp_res = r // payload[i]  # Using integer division
-
-            if valid_operation and 0 <= temp_res <= max_range:
-                result.append(char)
-                i += 1
-                r = temp_res
-                chars = math_char[:]
-            else:
-                chars.remove(char)
-
-        if len(result) < 9:  # We need 9 operations for 10 numbers
-            raise ValueError("Could not find valid sequence of operations")
-        self.payload = payload
-        print(payload)
-        return result
-
-    def create_payload(self):
-        range_game = 5 + self.level * 5
-        payload = [random.randint(0, range_game) for _ in range(10)]
-        self.payload = payload
-
-    def calculate(self, a, b, op):
-        match op:
-            case "+":
-                return a + b
-            case "-":
-                return a - b
-            case "*":
-                return a * b
-            case "/":
-                return a // b
-
-    def run(self) -> Generator[tuple[str, bool], int, None]:
-        self.create_payload()
-        chars = self._set_math_char()
-        payload = self.payload
-        mistake_counter = 0
-        a, b = payload[0], payload[1]
-        result = self.calculate(a, b, chars[0])
-
-        answer = yield f"{a} {chars[0]} {b} = ", False
-        while True:
-            if answer == result:
-                break
-            mistake_counter += 1
-            answer = yield f"{a} {chars[0]} {b} = ", False
-
-        for index, no in enumerate(payload[2:], 1):
-            a, b = answer, no
-            result = self.calculate(a, b, chars[index])
-            answer = yield f"{chars[index]} {b}", True
-            while True:
-                if answer == result:
-                    break
-                mistake_counter += 1
-                answer = yield f"{chars[index]} {b}", False
-
-        return False
+# Load the kv file
+Builder.load_file("src/GUI/games/result_keeper.kv")
 
 
 class ResultKeeperScreen(Screen):
     def __init__(self, **kwargs):
         super(ResultKeeperScreen, self).__init__(**kwargs)
-        r = ResultKeeper(1)
-        self.game = r.run()
+        # Store countdown event
+        self.countdown_event = None
+        self.timer_event = None
+        self.result_keeper = None
+        self.game = None
+        self.time_left = 60
+        self.countdown = 3
+
+    def on_kv_post(self, base_widget):
+        """Called after kv file is loaded and all widgets are created"""
+        # Initialize game state
+        self.initialize_game_state()
+        # Initialize UI state
+        if hasattr(self, "answer_field"):
+            self.answer_field.disabled = False
+            self.answer_field.text = ""
+        if hasattr(self, "info_label"):
+            self.info_label.text = "Get Ready!"
+        if hasattr(self, "timer_label"):
+            self.timer_label.text = "Time left: 60s"
+        if hasattr(self, "countdown_label"):
+            self.countdown_label.text = "3"
+        if hasattr(self, "game_layout"):
+            self.game_layout.opacity = 0
+        if hasattr(self, "countdown_layout"):
+            self.countdown_layout.opacity = 1
+
+    def initialize_game_state(self):
+        """Initialize or reset the game state"""
+        self.result_keeper = ResultKeeper(1)
+        self.game = self.result_keeper.run()
         message, _ = next(self.game)
+        if hasattr(self, "question_field"):
+            self.question_field.text = message
         self.time_left = 60  # 60 seconds timer
         self.timer_event = None
         self.countdown = 3  # Initial countdown value
-
-        # Initialize widgets
-        self.countdown_label = Label(
-            text="3",
-            font_size=150,  # Large font for countdown
-            size_hint=(1, 1),
-            halign="center",
-            valign="middle",
-        )
-
-        self.info_label = Label(
-            text="Get Ready!",
-            font_size=18,
-            size_hint=(1, 0.15),
-            halign="center",
-            valign="middle",
-        )
-        self.timer_label = Label(
-            text="Time left: 60s",
-            font_size=18,
-            size_hint=(1, 0.15),
-            halign="center",
-            valign="middle",
-        )
-        self.question_field = Label(
-            text=message,
-            font_size=18,
-            size_hint=(1, 0.15),
-            halign="center",
-            valign="middle",
-        )
-        self.answer_field = TextInput(
-            hint_text="Answer",
-            multiline=False,
-            padding=(20, 20, 20, 20),
-            size_hint=(1, 0.25),
-        )
-        self.setup_layout()
-
-    def setup_layout(self):
-        """Setup the screen layout with all widgets"""
-        # Create two layouts: one for countdown and one for game
-        self.countdown_layout = GridLayout(cols=1, spacing=10, padding=10)
-        self.countdown_layout.add_widget(self.countdown_label)
-
-        self.game_layout = GridLayout(cols=1, spacing=10, padding=10)
-        self.game_layout.add_widget(self.info_label)
-        self.game_layout.add_widget(self.timer_label)
-        self.game_layout.add_widget(self.question_field)
-        self.answer_field.bind(on_text_validate=self.on_answer_field_enter)
-        self.game_layout.add_widget(self.answer_field)
-
-        # Initially show countdown layout
-        self.add_widget(self.countdown_layout)
 
     def start_countdown(self, dt):
         """Update the countdown display"""
         self.countdown -= 1
         if self.countdown >= 0:
-            self.countdown_label.text = str(self.countdown)
+            if hasattr(self, "countdown_label"):
+                self.countdown_label.text = str(self.countdown)
             return True
         else:
-            # Switch to game layout and start the game
-            self.remove_widget(self.countdown_layout)
-            self.add_widget(self.game_layout)
+            # Switch layouts
+            if hasattr(self, "countdown_layout"):
+                self.countdown_layout.opacity = 0
+            if hasattr(self, "game_layout"):
+                self.game_layout.opacity = 1
+            # Start the game
             self.start_timer()
-            Clock.schedule_once(lambda dt: setattr(self.answer_field, "focus", True), 0)
+            if hasattr(self, "answer_field"):
+                Clock.schedule_once(
+                    lambda dt: setattr(self.answer_field, "focus", True), 0
+                )
+            # Unschedule countdown
+            if self.countdown_event:
+                self.countdown_event.cancel()
             return False
 
     def start_timer(self):
@@ -214,58 +80,143 @@ class ResultKeeperScreen(Screen):
     def update_timer(self, dt):
         """Update the timer display and check if time's up"""
         self.time_left -= 1
-        self.timer_label.text = f"Time left: {self.time_left}s"
+        if hasattr(self, "timer_label"):
+            self.timer_label.text = f"Time left: {self.time_left}s"
 
         if self.time_left <= 0:
-            self.timer_event.cancel()  # Stop the timer
-            self.info_label.text = "Game Over - Time's up!"
-            self.answer_field.disabled = True
+            self.cleanup_clock_events()
+            points = self.result_keeper.points.points
+            level = self.result_keeper.level
+            if hasattr(self, "info_label"):
+                self.info_label.text = f"Game Over - Time's up! You earned {points} points at level {level}!"
+            if hasattr(self, "answer_field"):
+                self.answer_field.disabled = True
+            self.show_end_game_buttons()
             return False
         return True
-
-    def on_enter(self):
-        """Called when the screen is entered"""
-        # Start the countdown
-        Clock.schedule_interval(self.start_countdown, 1)
-
-    def _check_validation_input(self, input):
-        """Check if the input is a number"""
-        try:
-            answer = int(self.answer_field.text)
-        except ValueError:
-            self.answer_field.text = ""
-            self.info_label.text = "Answer must be a number!"
-            Clock.schedule_once(lambda dt: setattr(self.answer_field, "focus", True), 0)
-
-        return answer
 
     def on_answer_field_enter(self, instance):
         """When user presses enter in answer field"""
         try:
             answer = int(self.answer_field.text)
         except ValueError:
-            self.answer_field.text = ""
-            self.info_label.text = "Answer must be a number!"
-            Clock.schedule_once(lambda dt: setattr(self.answer_field, "focus", True), 0)
+            if hasattr(self, "answer_field"):
+                self.answer_field.text = ""
+            if hasattr(self, "info_label"):
+                self.info_label.text = "Answer must be a number!"
+            if hasattr(self, "answer_field"):
+                Clock.schedule_once(
+                    lambda dt: setattr(self.answer_field, "focus", True), 0
+                )
             return
 
         try:
+            # First send the answer
             message, result = self.game.send(answer)
-            self.question_field.text = message
+
             if result:
-                self.info_label.text = "Correct! Continue with the next operation."
+                # If correct, get the next question
+                try:
+                    message, _ = next(self.game)
+                    if hasattr(self, "question_field"):
+                        self.question_field.text = message
+                    # Update level display
+                    current_level = self.result_keeper.level
+                    if hasattr(self, "level_label"):
+                        self.level_label.text = f"Level: {current_level}"
+                    if hasattr(self, "info_label"):
+                        self.info_label.text = (
+                            "Correct! Continue with the next operation."
+                        )
+                except StopIteration:
+                    self.cleanup_clock_events()
+                    points = self.result_keeper.points.points
+                    level = self.result_keeper.level
+                    if hasattr(self, "info_label"):
+                        self.info_label.text = f"Congratulations! Game finished! You earned {points} points at level {level}!"
+                    if hasattr(self, "answer_field"):
+                        self.answer_field.disabled = True
+                    self.show_end_game_buttons()
+                    return
             else:
-                self.info_label.text = "Try again!"
+                if hasattr(self, "info_label"):
+                    self.info_label.text = "Try again!"
+
         except StopIteration:
-            self.timer_event.cancel()  # Stop the timer when game is finished
-            self.info_label.text = "Congratulations! Game finished!"
-            self.answer_field.disabled = True
+            self.cleanup_clock_events()
+            points = self.result_keeper.points.points
+            level = self.result_keeper.level
+            if hasattr(self, "info_label"):
+                self.info_label.text = f"Congratulations! Game finished! You earned {points} points at level {level}!"
+            if hasattr(self, "answer_field"):
+                self.answer_field.disabled = True
+            self.show_end_game_buttons()
             return
 
-        self.answer_field.text = ""
-        Clock.schedule_once(lambda dt: setattr(self.answer_field, "focus", True), 0)
+        if hasattr(self, "answer_field"):
+            self.answer_field.text = ""
+            Clock.schedule_once(lambda dt: setattr(self.answer_field, "focus", True), 0)
+
+    def cleanup_clock_events(self):
+        """Clean up all Clock events"""
+        # Cancel timer if running
+        if self.timer_event:
+            self.timer_event.cancel()
+            self.timer_event = None
+
+        # Cancel countdown if running
+        if self.countdown_event:
+            self.countdown_event.cancel()
+            self.countdown_event = None
+
+    def on_enter(self):
+        """Called when the screen is entered"""
+        # Start new game
+        self.start_new_game()
 
     def on_leave(self):
         """Clean up when leaving the screen"""
-        if self.timer_event:
-            self.timer_event.cancel()
+        self.cleanup_clock_events()
+
+    def start_new_game(self):
+        """Start a new game with countdown"""
+        self.cleanup_clock_events()
+        # Reset game state
+        self.initialize_game_state()
+        # Reset UI state if widgets exist
+        if hasattr(self, "answer_field"):
+            self.answer_field.disabled = False
+            self.answer_field.text = ""
+        if hasattr(self, "info_label"):
+            self.info_label.text = "Get Ready!"
+        if hasattr(self, "timer_label"):
+            self.timer_label.text = "Time left: 60s"
+        if hasattr(self, "countdown_label"):
+            self.countdown_label.text = "3"
+        if hasattr(self, "game_layout"):
+            self.game_layout.opacity = 0
+        if hasattr(self, "countdown_layout"):
+            self.countdown_layout.opacity = 1
+        # Hide end game buttons
+        self.hide_end_game_buttons()
+        # Start countdown again
+        self.countdown_event = Clock.schedule_interval(self.start_countdown, 1)
+
+    def try_again(self, instance):
+        """Reset and restart the game"""
+        self.start_new_game()
+
+    def back_to_menu(self, instance):
+        """Return to the main menu after clearing session"""
+        self.cleanup_clock_events()
+        self.manager.current = "menu"
+
+    def show_end_game_buttons(self):
+        """Show the try again and back to menu buttons"""
+        if hasattr(self, "buttons_layout"):
+            self.buttons_layout.opacity = 1
+
+    def hide_end_game_buttons(self):
+        """Hide the try again and back to menu buttons"""
+        if hasattr(self, "buttons_layout"):
+            self.buttons_layout.opacity = 0

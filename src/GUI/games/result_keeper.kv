@@ -1,0 +1,120 @@
+#:kivy 2.0.0
+
+<ResultKeeperScreen>:
+    countdown_label: countdown_label
+    info_label: info_label
+    timer_label: timer_label
+    level_label: level_label
+    question_field: question_field
+    answer_field: answer_field
+    countdown_layout: countdown_layout
+    game_layout: game_layout
+    buttons_layout: buttons_layout
+    try_again_button: try_again_button
+    back_to_menu_button: back_to_menu_button
+
+    canvas.before:
+        Color:
+            rgba: 1, 1, 1, 1
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+    FloatLayout:
+        id: float_layout
+        size_hint: 1, 1
+        pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+
+        GridLayout:
+            id: countdown_layout
+            cols: 1
+            spacing: 10
+            padding: 10
+            opacity: 1
+            size_hint: 0.8, 0.8
+            pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+
+            Label:
+                id: countdown_label
+                text: "3"
+                font_size: 150
+                size_hint: 1, 1
+                halign: "center"
+                valign: "middle"
+                color: 0, 0, 0, 1
+
+        GridLayout:
+            id: game_layout
+            cols: 1
+            spacing: 10
+            padding: 10
+            opacity: 0
+            size_hint: 0.8, 0.8
+            pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+
+            Label:
+                id: info_label
+                text: "Get Ready!"
+                font_size: 18
+                size_hint: 1, 0.15
+                halign: "center"
+                valign: "middle"
+                color: 0, 0, 0, 1
+
+            Label:
+                id: timer_label
+                text: "Time left: 60s"
+                font_size: 18
+                size_hint: 1, 0.15
+                halign: "center"
+                valign: "middle"
+                color: 0, 0, 0, 1
+
+            Label:
+                id: level_label
+                text: "Level: 1"
+                font_size: 18
+                size_hint: 1, 0.15
+                halign: "center"
+                valign: "middle"
+                color: 0, 0, 0, 1
+
+            Label:
+                id: question_field
+                font_size: 18
+                size_hint: 1, 0.15
+                halign: "center"
+                valign: "middle"
+                color: 0, 0, 0, 1
+
+            TextInput:
+                id: answer_field
+                hint_text: "Answer"
+                multiline: False
+                padding: 20, 20, 20, 20
+                size_hint: 1, 0.25
+                on_text_validate: root.on_answer_field_enter(self)
+
+            GridLayout:
+                id: buttons_layout
+                cols: 2
+                spacing: 10
+                padding: 10
+                size_hint: 1, 0.15
+                opacity: 0  # Initially hidden
+
+                Button:
+                    id: try_again_button
+                    text: "Try Again"
+                    on_press: root.try_again(self)
+                    size_hint: 0.5, 1
+                    background_color: 0.2, 0.6, 1, 1
+                    disabled: self.parent.opacity == 0
+
+                Button:
+                    id: back_to_menu_button
+                    text: "Back to Menu"
+                    on_press: root.back_to_menu(self)
+                    size_hint: 0.5, 1
+                    background_color: 0.8, 0.2, 0.2, 1
+                    disabled: self.parent.opacity == 0
