@@ -3,6 +3,7 @@ from kivy.uix.screenmanager import ScreenManager
 
 from ..db.db import DATABASE_URL, engine, session
 from .authorization import CreateAccountScreen, LoginScreen
+from .games.result_keeper import ResultKeeperScreen
 from .menu import MenuScreen
 
 
@@ -20,6 +21,7 @@ class MyApp(App):
         sm.add_widget(
             CreateAccountScreen(session=self.db_session, name="create_account")
         )
+        sm.add_widget(ResultKeeperScreen(name="result_keeper_game"))
         sm.current = "login"
         return sm
 
