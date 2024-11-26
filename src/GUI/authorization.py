@@ -10,7 +10,7 @@ from kivy.uix.popup import Popup
 from kivy.uix.screenmanager import Screen
 from kivy.uix.textinput import TextInput
 
-from ..models.user import User
+from ..models.user import Login, User
 from ..user.session import hash_password, verify_password
 
 
@@ -149,6 +149,10 @@ class LoginScreen(Screen):
             # Save credentials if remember me is checked
             if self.remember_me.active:
                 self.save_credentials(username, password)
+            # save login
+            login = Login(user_id=user.id)
+            self.session.add(login)
+            self.session.commit()
 
             self.manager.current = "menu"
         else:
