@@ -87,6 +87,26 @@ class TestLoginScreen(GraphicUnitTest):
         assert popup.title == title
 
     @patch("src.GUI.authorization.verify_password")
+    def test_login_is_saved_after_successful_authorization(self, mock_verify):
+        # Setup mocks
+        mock_verify.return_value = True
+        mock_user = MagicMock()
+        mock_user.id = 1
+        mock_user.password = "stored_hash"
+        self.session.query().filter_by().first.return_value = mock_user
+
+        # Set test values
+        self.login_screen.user_field.text = "test_user"
+        self.login_screen.password_field.text = "correct_password"
+
+        self.login_screen.login_button.dispatch("on_press")
+        self.session.add.assert_called_once()  # Check that add was called
+        added_login = self.session.add.call_args[0][0]
+
+        assert added_login.user_id == mock_user.id  # Check user_id matches
+        self.session.commit.assert_called_once()
+
+    @patch("src.GUI.authorization.verify_password")
     def test_failed_login_shows_popup(self, mock_verify):
         """Test that failed login shows error popup"""
         # Setup mocks
