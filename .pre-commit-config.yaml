@@ -4,16 +4,19 @@ repos:
     hooks:
     -   id: check-yaml
     -   id: end-of-file-fixer
+        exclude: ^migrations/
     -   id: trailing-whitespace
+        exclude: ^migrations/
 -   repo: https://github.com/psf/black
     rev: 23.10.1
     hooks:
     -   id: black
+        exclude: ^migrations/
 -   repo: https://github.com/PyCQA/bandit
     rev: 1.7.5
     hooks:
     -   id: bandit
-        exclude: ^tests/
+        exclude: ^(tests/|migrations/)
         args:
             - -s
             - B101,B311,B106
@@ -21,9 +24,11 @@ repos:
     rev: v0.1.8
     hooks:
     -   id: ruff
+        exclude: ^migrations/
 -   repo: https://github.com/PyCQA/isort
     rev: 5.13.2
     hooks:
       - id: isort
         name: isort (python)
         args: ["--profile", "black", "--filter-files"]
+        exclude: ^migrations/

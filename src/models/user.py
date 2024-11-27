@@ -4,6 +4,7 @@ from typing import List, Optional
 from sqlmodel import Field, Relationship
 
 from . import ModelBase
+from .games import GameLevel
 
 
 class User(ModelBase, table=True):
@@ -14,6 +15,10 @@ class User(ModelBase, table=True):
     password: str
     created_at: datetime.datetime = Field(default_factory=datetime.datetime.now)
     logins: List["Login"] = Relationship(back_populates="user")
+
+    # stats
+    points: int = Field(default=0)
+    game_levels: List[GameLevel] = Relationship(back_populates="user")
 
 
 class Login(ModelBase, table=True):
