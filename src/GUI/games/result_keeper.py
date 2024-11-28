@@ -1,22 +1,27 @@
+from kivy.app import App
 from kivy.clock import Clock
 from kivy.lang import Builder
 from kivy.uix.screenmanager import Screen
 
+from src.db.session import UserSession
 from src.games.math import ResultKeeper
+from src.models.user import User
 
 # Load the kv file
 Builder.load_file("src/GUI/games/result_keeper.kv")
 
 
 class ResultKeeperScreen(Screen):
-    def __init__(self, **kwargs):
+    def __init__(self, session, **kwargs):
         super(ResultKeeperScreen, self).__init__(**kwargs)
+        self.session = session
+
         # Store countdown event
         self.countdown_event = None
         self.timer_event = None
         self.result_keeper = None
         self.game = None
-        self.time_left = 60
+        self.time_left = 60  # 60 seconds for the game
         self.countdown = 3
 
     def on_kv_post(self, base_widget):
@@ -78,10 +83,11 @@ class ResultKeeperScreen(Screen):
         self.timer_event = Clock.schedule_interval(self.update_timer, 1)
 
     def update_timer(self, dt):
-        """Update the timer display and check if time's up"""
-        self.time_left -= 1
-        if hasattr(self, "timer_label"):
-            self.timer_label.text = f"Time left: {self.time_left}s"
+        """Update timer every second"""
+        if self.time_left > 0:
+            self.time_left -= 1
+            if hasattr(self, "timer_label"):
+                self.timer_label.text = f"Time left: {self.time_left}s"
 
         if self.time_left <= 0:
             self.cleanup_clock_events()
@@ -91,6 +97,15 @@ class ResultKeeperScreen(Screen):
                 self.info_label.text = f"Game Over - Time's up! You earned {points} points at level {level}!"
             if hasattr(self, "answer_field"):
                 self.answer_field.disabled = True
+            # save the points
+            app = App.get_running_app()
+            user = app.user_session
+            self.session.query(User).filter_by(id=user.id).update(
+                {"points": User.points + points}
+            )
+            self.session.commit()
+            # Create new UserSession with updated points
+            app.user_session = UserSession(user.id, user.username, user.points + points)
             self.show_end_game_buttons()
             return False
         return True

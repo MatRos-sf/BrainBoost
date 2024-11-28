@@ -1,5 +1,9 @@
+from typing import Optional
+
 from kivy.app import App
 from kivy.uix.screenmanager import ScreenManager
+
+from src.db.session import UserSession
 
 from ..db.db import DATABASE_URL, engine, session
 from .authorization import CreateAccountScreen, LoginScreen
@@ -13,6 +17,17 @@ class MyApp(App):
         # Initialize database
         self.db_engine = engine(database_url)
         self.db_session = session(self.db_engine)
+        self._user_session: Optional[
+            UserSession
+        ] = None  # Will store current user information
+
+    @property
+    def user_session(self):
+        return self._user_session
+
+    @user_session.setter
+    def user_session(self, value):
+        self._user_session = value
 
     def build(self):
         sm = ScreenManager()
@@ -21,7 +36,9 @@ class MyApp(App):
         sm.add_widget(
             CreateAccountScreen(session=self.db_session, name="create_account")
         )
-        sm.add_widget(ResultKeeperScreen(name="result_keeper_game"))
+        sm.add_widget(
+            ResultKeeperScreen(session=self.db_session, name="result_keeper_game")
+        )
         sm.current = "login"
         return sm
 

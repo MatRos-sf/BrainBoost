@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 
+from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
 from kivy.uix.checkbox import CheckBox
@@ -10,6 +11,7 @@ from kivy.uix.popup import Popup
 from kivy.uix.screenmanager import Screen
 from kivy.uix.textinput import TextInput
 
+from ..db.session import UserSession
 from ..models.user import Login, User
 from ..user.session import hash_password, verify_password
 
@@ -45,6 +47,8 @@ class LoginScreen(Screen):
     def __init__(self, session, **kwargs):
         super(LoginScreen, self).__init__(**kwargs)
         self.session = session
+        app = App.get_running_app()
+        self.user_session = app.user_session
         self._popup = []  # List to store active popups
 
         # Initialize widgets
@@ -154,6 +158,11 @@ class LoginScreen(Screen):
             self.session.add(login)
             self.session.commit()
 
+            # Set user session in both app and screen
+            app = App.get_running_app()
+            self.user_session = UserSession(user.id, user.username, user.points)
+            app.user_session = self.user_session
+            print(self.user_session)
             self.manager.current = "menu"
         else:
             self.show_message(
