@@ -18,7 +18,7 @@ class MyApp(App):
     def build(self):
         sm = ScreenManager()
         sm.add_widget(LoginScreen(session_manager=self.session_manager, name="login"))
-        sm.add_widget(MenuScreen(name="menu"))
+        sm.add_widget(MenuScreen(session_manager=self.session_manager, name="menu"))
         sm.add_widget(
             CreateAccountScreen(
                 session_manager=self.session_manager, name="create_account"

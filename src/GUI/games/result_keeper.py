@@ -1,9 +1,8 @@
-from kivy.app import App
 from kivy.clock import Clock
 from kivy.lang import Builder
 from kivy.uix.screenmanager import Screen
 
-from src.db.session import GameManager, UserSession
+from src.db.session import GameManager
 from src.games.math import ResultKeeper
 from src.models.user import User
 
@@ -98,14 +97,12 @@ class ResultKeeperScreen(Screen):
             if hasattr(self, "answer_field"):
                 self.answer_field.disabled = True
             # save the points
-            app = App.get_running_app()
-            user = app.user_session
-            self.session_manager.db.update_record(
-                User, user.id, {"points": user.points + points}
-            )
+            user = self.session_manager.current_session
+            payload = {"points": user.points + points}
+            self.session_manager.db.update_record(User, user.id, payload)
+            self.session_manager.update_session(payload)
 
             # Create new UserSession with updated points
-            app.user_session = UserSession(user.id, user.username, user.points + points)
             self.show_end_game_buttons()
             return False
         return True
