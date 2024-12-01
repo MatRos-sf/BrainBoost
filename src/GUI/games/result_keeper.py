@@ -3,7 +3,7 @@ from kivy.clock import Clock
 from kivy.lang import Builder
 from kivy.uix.screenmanager import Screen
 
-from src.db.session import UserSession
+from src.db.session import GameManager, UserSession
 from src.games.math import ResultKeeper
 from src.models.user import User
 
@@ -12,9 +12,9 @@ Builder.load_file("src/GUI/games/result_keeper.kv")
 
 
 class ResultKeeperScreen(Screen):
-    def __init__(self, session, **kwargs):
+    def __init__(self, session_manager: GameManager, **kwargs):
         super(ResultKeeperScreen, self).__init__(**kwargs)
-        self.session = session
+        self.session_manager = session_manager
 
         # Store countdown event
         self.countdown_event = None
@@ -100,10 +100,10 @@ class ResultKeeperScreen(Screen):
             # save the points
             app = App.get_running_app()
             user = app.user_session
-            self.session.query(User).filter_by(id=user.id).update(
-                {"points": User.points + points}
+            self.session_manager.db.update_record(
+                User, user.id, {"points": user.points + points}
             )
-            self.session.commit()
+
             # Create new UserSession with updated points
             app.user_session = UserSession(user.id, user.username, user.points + points)
             self.show_end_game_buttons()

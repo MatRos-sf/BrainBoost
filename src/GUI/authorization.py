@@ -11,7 +11,7 @@ from kivy.uix.popup import Popup
 from kivy.uix.screenmanager import Screen
 from kivy.uix.textinput import TextInput
 
-from ..db.session import UserSession
+from ..db.session import GameManager, UserSession
 from ..models.user import Login, User
 from ..user.session import hash_password, verify_password
 
@@ -44,9 +44,9 @@ class MessagePopup(Popup):
 
 
 class LoginScreen(Screen):
-    def __init__(self, session, **kwargs):
+    def __init__(self, session_manager: GameManager, **kwargs):
         super(LoginScreen, self).__init__(**kwargs)
-        self.session = session
+        self.session_manager = session_manager
         app = App.get_running_app()
         self.user_session = app.user_session
         self._popup = []  # List to store active popups
@@ -143,7 +143,7 @@ class LoginScreen(Screen):
         username = self.user_field.text.strip()
         password = self.password_field.text
 
-        user = self.session.query(User).filter_by(username=username).first()
+        user = self.session_manager.db.find_record(User, username=username)
 
         if user and verify_password(user.password, password):
             self.show_message("Success", "Login successful!")
@@ -154,9 +154,7 @@ class LoginScreen(Screen):
             if self.remember_me.active:
                 self.save_credentials(username, password)
             # save login
-            login = Login(user_id=user.id)
-            self.session.add(login)
-            self.session.commit()
+            self.session_manager.db.add_record(Login, user_id=user.id)
 
             # Set user session in both app and screen
             app = App.get_running_app()
@@ -206,9 +204,9 @@ class LoginScreen(Screen):
 
 
 class CreateAccountScreen(Screen):
-    def __init__(self, session, **kwargs):
+    def __init__(self, session_manager: GameManager, **kwargs):
         super(CreateAccountScreen, self).__init__(**kwargs)
-        self.session = session
+        self.session_manager = session_manager
         self.layout = GridLayout()
         self.layout.cols = 1
         self.layout.size_hint = (0.6, 0.7)
@@ -277,24 +275,22 @@ class CreateAccountScreen(Screen):
                 return
 
             # Check if username exists
-            existing_user = (
-                self.session.query(User).filter_by(username=username).first()
-            )
+            existing_user = self.session_manager.db.find_record(User, username=username)
             if existing_user:
                 self.info_label.text = "Username already exists!"
                 return
 
             # Create new user
-            new_user = User(username=username, password=hash_password(password_one))
-            self.session.add(new_user)
-            self.session.commit()
+            self.session_manager.db.add_record(
+                User, username=username, password=hash_password(password_one)
+            )
 
             self.info_label.text = "Account created successfully!"
             self.manager.current = "login"
 
         except Exception as e:
             self.info_label.text = f"Error creating account: {str(e)}"
-            self.session.rollback()
+            self.session_manager.db.rollback()
 
     def on_user_field_enter(self, instance):
         """When user presses enter in username field, focus moves to first password field"""
