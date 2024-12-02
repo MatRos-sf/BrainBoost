@@ -1,6 +1,9 @@
 from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import sessionmaker
 
+from ..models.games import GameLevel, GameName
+from ..models.user import User
+
 DATABASE_URL = "sqlite:///db.sqlite"
 
 
@@ -9,26 +12,39 @@ def engine(database_url: str = DATABASE_URL) -> Engine:
     return engine
 
 
-def session(engine: Engine) -> sessionmaker:
-    Session = sessionmaker(bind=engine)
-    return Session()
-
-
 class DBManager:
     def __init__(self, database_url: str = DATABASE_URL):
         self.engine = engine(database_url)
-        self.session = session(self.engine)
+        self.session = sessionmaker(bind=self.engine)()
 
     def find_record(self, model, **kwargs):
-        if not kwargs:
-            raise ValueError("No keyword arguments profide to find a record!")
         return self.session.query(model).filter_by(**kwargs).first()
 
     def add_record(self, model, **kwargs):
-        model = model(**kwargs)
-        self.session.add(model)
+        record = model(**kwargs)
+        self.session.add(record)
         self.session.commit()
 
     def update_record(self, model, id, fields: dict):
         self.session.query(model).filter_by(id=id).update(fields)
         self.session.commit()
+
+    def rollback(self):
+        self.session.rollback()
+
+    def create_account(self, username, password):
+        try:
+            # First create and commit the user
+            user = User(username=username, password=password)
+            self.session.add(user)
+            self.session.commit()
+
+            # Now create game levels with the user's ID
+            for game in GameName:
+                self.session.add(GameLevel(user_id=user.id, game_name=game, level=1))
+            self.session.commit()
+
+            return self.find_record(User, username=username, id=user.id)
+        except:
+            self.session.rollback()
+            raise

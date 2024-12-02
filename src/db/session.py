@@ -1,7 +1,15 @@
 from dataclasses import dataclass
-from typing import Dict
+from typing import Dict, List
 
+from ..models.games import GameName
 from .db import DATABASE_URL, DBManager
+
+
+@dataclass
+class GameStatistic:
+    id: int
+    game: GameName
+    level: int
 
 
 @dataclass
@@ -9,6 +17,15 @@ class UserSession:
     id: int
     username: str
     points: int
+    stats: List[GameStatistic]
+
+    @classmethod
+    def parse_data(cls, data):
+        games = [
+            GameStatistic(id=game.id, game=game.game_name, level=game.level)
+            for game in data.game_levels
+        ]
+        return cls(id=data.id, username=data.username, points=data.points, stats=games)
 
 
 class GameManager:

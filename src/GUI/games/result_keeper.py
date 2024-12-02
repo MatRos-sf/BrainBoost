@@ -100,6 +100,7 @@ class ResultKeeperScreen(Screen):
             user = self.session_manager.current_session
             payload = {"points": user.points + points}
             self.session_manager.db.update_record(User, user.id, payload)
+            #
             self.session_manager.update_session(payload)
 
             # Create new UserSession with updated points

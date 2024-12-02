@@ -11,6 +11,7 @@ from kivy.uix.screenmanager import Screen
 from kivy.uix.textinput import TextInput
 
 from ..db.session import GameManager, UserSession
+from ..models.games import GameLevel, GameName
 from ..models.user import Login, User
 from ..user.session import hash_password, verify_password
 
@@ -153,13 +154,21 @@ class LoginScreen(Screen):
                 self.save_credentials(username, password)
             # save login
             self.session_manager.db.add_record(Login, user_id=user.id)
+            # check that all stats game are loaded
+            if len(user.game_levels) < len(GameName):
+                for game in GameName:
+                    if (
+                        len(list(filter(lambda x: x.game == game, user.game_levels)))
+                        == 0
+                    ):
+                        self.session_manager.db.add_record(
+                            GameLevel, user_id=user.id, game_name=game, level=1
+                        )
+                user = self.session_manager.db.find_record(User, username=username)
 
             # Set user session in both app and screen
-            self.session_manager.current_session = UserSession(
-                user.id, user.username, user.points
-            )
+            self.session_manager.current_session = UserSession.parse_data(user)
             # self.user_session = UserSession(user.id, user.username, user.points)
-            print(user)
             self.manager.current = "menu"
         else:
             self.show_message(
@@ -279,17 +288,17 @@ class CreateAccountScreen(Screen):
                 self.info_label.text = "Username already exists!"
                 return
 
-            # Create new user
-            self.session_manager.db.add_record(
-                User, username=username, password=hash_password(password_one)
+            # Create new user with game levels
+            self.session_manager.db.create_account(
+                username, hash_password(password_one)
             )
 
             self.info_label.text = "Account created successfully!"
             self.manager.current = "login"
 
         except Exception as e:
-            self.info_label.text = f"Error creating account: {str(e)}"
             self.session_manager.db.rollback()
+            self.info_label.text = f"Error creating account: {str(e)}"
 
     def on_user_field_enter(self, instance):
         """When user presses enter in username field, focus moves to first password field"""
