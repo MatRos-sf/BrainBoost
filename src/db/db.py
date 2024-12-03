@@ -3,6 +3,7 @@ from sqlalchemy.orm import sessionmaker
 
 from ..models.games import GameLevel, GameName
 from ..models.user import User
+from ..user.session import hash_password
 
 DATABASE_URL = "sqlite:///db.sqlite"
 
@@ -32,7 +33,9 @@ class DBManager:
     def rollback(self):
         self.session.rollback()
 
-    def create_account(self, username, password):
+    def create_account(self, username: str, password: str):
+        # Hash the password
+        password = hash_password(password)
         try:
             # First create and commit the user
             user = User(username=username, password=password)

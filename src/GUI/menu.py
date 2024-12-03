@@ -1,16 +1,16 @@
 from kivy.uix.button import Button
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
-from kivy.uix.screenmanager import Screen
 
 from src.db.session import GameManager
 
+from .base_screen import BaseScreen
 
-class MenuScreen(Screen):
-    def __init__(self, session_manager: GameManager, **kwargs):
-        super(MenuScreen, self).__init__(**kwargs)
-        self.session_manager = session_manager
 
+class MenuScreen(BaseScreen):
+    def __init__(self, session_manager: GameManager, **kwargs) -> None:
+        super(MenuScreen, self).__init__(session_manager, **kwargs)
+        # layouts
         self.layout = GridLayout(
             cols=1, size_hint=(0.6, 0.7), pos_hint={"center_x": 0.5, "center_y": 0.5}
         )
@@ -36,15 +36,15 @@ class MenuScreen(Screen):
 
         self.add_widget(self.layout)
 
-    def on_enter(self):
+    def on_enter(self) -> None:
         # Update user_session when screen is entered
         points = self.session_manager.current_session.points
         username = self.session_manager.current_session.username
         self.user_info.text = f"Welcome {username}!\nPoints: {points}"
 
-    def go_back(self, instance):
+    def go_back(self, instance) -> None:
         del self.session_manager.current_session
         self.manager.current = "login"
 
-    def start_game_result_keeper(self, instance):
+    def start_game_result_keeper(self, instance) -> None:
         self.manager.current = "result_keeper_game"
