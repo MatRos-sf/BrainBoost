@@ -1,15 +1,7 @@
 import random
 from typing import Generator, List, Optional
 
-
-class Points:
-    def __init__(self, level: int):
-        self.level = level
-        self.points = 0
-        self.answers_status: List[bool] = []
-
-    def update_points(self) -> None:
-        self.points += self.level
+from src.games.points import Points
 
 
 class ResultKeeper:
@@ -17,6 +9,8 @@ class ResultKeeper:
         self.level = level
         self.payload = []
         self.points = Points(level)
+        self.is_init = False
+        self.lives_left = 3
 
     def _set_math_char(
         self,
@@ -78,9 +72,12 @@ class ResultKeeper:
         self.payload = payload
         return result
 
-    def create_payload(self):
+    def create_payload(self, payload: Optional[List[int]] = None):
         range_game = 5 + self.level * 5
-        payload = [random.randint(0, range_game) for _ in range(10)]
+        if not payload:
+            payload = []
+        size_payload = len(payload)
+        payload += [random.randint(0, range_game) for _ in range(10 - size_payload)]
         self.payload = payload
 
     def calculate(self, a, b, op):
@@ -96,40 +93,56 @@ class ResultKeeper:
             case _:
                 raise ValueError(f"Invalid operation: {op}")
 
+    def _question(self, a: int, b: int, char: str):
+        """Helper method to generate questions"""
+        return f"{a} {char} {b} = " if self.is_init else f"{char} {b}"
+
     def _get_answer(
         self, expected_result: int, question: str
-    ) -> Generator[tuple[str, bool], int, None]:
+    ) -> Generator[tuple[str, bool], int, Optional[int]]:
         """Helper method to handle answer validation"""
         while True:
             answer = yield question, False
             if answer == expected_result:
                 self.points.update_points()
+                self.is_init = False
                 yield question, True  # Signal success to the UI
                 return answer  # Return for next calculation
             else:
                 self.points.answers_status.append(False)
+                self.lives_left -= 1
+                if self.lives_left == 0:
+                    return None
 
     def round(self):
-        self.create_payload()
         chars = self._set_math_char()
         payload = self.payload
 
         # First question
         a, b = payload[0], payload[1]
         result = self.calculate(a, b, chars[0])
-        answer = yield from self._get_answer(result, f"{a} {chars[0]} {b} = ")
-
+        answer = yield from self._get_answer(result, self._question(a, b, chars[0]))
+        if not answer:
+            return None
         # Subsequent questions
         for index, no in enumerate(payload[2:], 1):
             a = answer  # Use previous answer
             b = no  # Get next number
             result = self.calculate(a, b, chars[index])
             answer = yield from self._get_answer(result, f"{chars[index]} {b} = ")
+            if not answer:
+                return None
+        self.create_payload([answer])
 
     def run(self) -> Generator[tuple[str, bool], int, None]:
         """Run the game, yielding (question, is_correct) tuples and accepting answers"""
+        self.is_init = True
+        self.create_payload()
         while True:
-            yield from self.round()
+            round_result = yield from self.round()
+            if not round_result:
+                return
+
             if all(self.points.answers_status):
                 self.points.answers_status = []
                 self.points.level += 1
