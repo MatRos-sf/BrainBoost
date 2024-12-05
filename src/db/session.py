@@ -24,7 +24,6 @@ class UserSession:
 
     @classmethod
     def parse_data(cls, data):
-        print(data)
         games = {
             game.game_name.value: GameStatistic(
                 id=game.id, game=game.game_name, level=game.level
@@ -100,3 +99,6 @@ class GameManager:
         else:
             raise UserNotFoundException(user_id)
         self.current_session = UserSession.parse_data(user)
+
+    def get_level_game(self, game_name: GameName):
+        return self.current_session.stats.get(game_name.value).level

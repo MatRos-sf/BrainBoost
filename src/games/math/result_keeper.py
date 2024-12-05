@@ -12,11 +12,11 @@ class ResultKeeper:
         self.is_init = False
         self.lives_left = 3
 
-    def _set_math_char(
-        self,
-        math_char: Optional[List[str]] = None,
-        max_range: int = 10,
-    ) -> List[str]:
+    @property
+    def range_size(self):
+        return 5 + self.level * 5
+
+    def _set_math_char(self, math_char: Optional[List[str]] = None) -> List[str]:
         """Generate a sequence of mathematical operations that work with the given payload."""
         if not self.payload:
             self.create_payload()
@@ -37,7 +37,7 @@ class ResultKeeper:
             temp_res = r
             if not chars:
                 chars = math_char[:]
-                payload[i] = random.randint(1, max_range)  # Avoid 0 for division
+                payload[i] = random.randint(1, self.range_size)  # Avoid 0 for division
                 continue
 
             char = random.choice(chars)
@@ -59,7 +59,7 @@ class ResultKeeper:
                     else:
                         temp_res = r // payload[i]  # Using integer division
 
-            if valid_operation and 0 <= temp_res <= max_range:
+            if valid_operation and 0 <= temp_res <= self.range_size:
                 result.append(char)
                 i += 1
                 r = temp_res
@@ -73,11 +73,12 @@ class ResultKeeper:
         return result
 
     def create_payload(self, payload: Optional[List[int]] = None):
-        range_game = 5 + self.level * 5
         if not payload:
             payload = []
         size_payload = len(payload)
-        payload += [random.randint(0, range_game) for _ in range(10 - size_payload)]
+        payload += [
+            random.randint(0, self.range_size) for _ in range(10 - size_payload)
+        ]
         self.payload = payload
 
     def calculate(self, a, b, op):
@@ -123,7 +124,7 @@ class ResultKeeper:
         a, b = payload[0], payload[1]
         result = self.calculate(a, b, chars[0])
         answer = yield from self._get_answer(result, self._question(a, b, chars[0]))
-        if not answer:
+        if answer is None:
             return None
         # Subsequent questions
         for index, no in enumerate(payload[2:], 1):
@@ -131,7 +132,7 @@ class ResultKeeper:
             b = no  # Get next number
             result = self.calculate(a, b, chars[index])
             answer = yield from self._get_answer(result, f"{chars[index]} {b} = ")
-            if not answer:
+            if answer is None:
                 return None
         self.create_payload([answer])
 

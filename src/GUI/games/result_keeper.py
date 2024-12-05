@@ -13,19 +13,18 @@ Builder.load_file("src/GUI/games/result_keeper.kv")
 
 class ResultKeeperScreen(BaseGamaScreen):
     NAME_GAME = GameName.RESULT_KEEPER
+    TIME_LEFT = 60
 
     def __init__(self, session_manager: GameManager, **kwargs):
         super(ResultKeeperScreen, self).__init__(session_manager, **kwargs)
 
         self.result_keeper = None
         self.game = None
-        self.time_left = 10  # 60 seconds for the game
+        self.time_left = ResultKeeperScreen.TIME_LEFT  # 60 seconds for the game
         self.countdown = 3
 
     def on_kv_post(self, base_widget):
         """Called after kv file is loaded and all widgets are created"""
-        # Initialize game state
-        self.initialize_game_state()
         # Initialize UI state
         self.answer_field.disabled = False
         self.answer_field.text = ""
@@ -36,13 +35,20 @@ class ResultKeeperScreen(BaseGamaScreen):
 
     def initialize_game_state(self):
         """Initialize or reset the game state"""
-        self.result_keeper = ResultKeeper(1)
+        if not self.session_manager:
+            level = 1
+        else:
+            level = self.session_manager.get_level_game(self.NAME_GAME)
+
+        self.result_keeper = ResultKeeper(level)
         self.info_label.text = f"{self.result_keeper.lives_left}"
+        self.level_label.text = f"{level}"
+
         self.game = self.result_keeper.run()
         message, _ = next(self.game)
-        if hasattr(self, "question_field"):
-            self.question_field.text = message
-        # self.time_left = 60  # 60 seconds timer
+        self.question_field.text = message
+
+        self.time_left = ResultKeeperScreen.TIME_LEFT
         self.timer_event = None
         self.countdown = 3  # Initial countdown value
 
@@ -78,8 +84,6 @@ class ResultKeeperScreen(BaseGamaScreen):
 
         if self.time_left <= 0:
             self.game_over()
-            points = self.result_keeper.points.points
-            self.save_stats(points, self.result_keeper.level)
             return False
         return True
 
@@ -104,8 +108,7 @@ class ResultKeeperScreen(BaseGamaScreen):
             f"Game Over - Time's up! You earned {points} points at level {level}!"
         )
         self.answer_field.disabled = True
-        # TODO: Save to the
-
+        self.save_stats(points, level)
         # Create new UserSession with updated points
         self.show_end_game_buttons()
 

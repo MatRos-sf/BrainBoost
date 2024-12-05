@@ -1,4 +1,4 @@
-from sqlalchemy import Engine, create_engine
+from sqlalchemy import Engine, create_engine, update
 from sqlalchemy.orm import sessionmaker
 
 from ..models.games import GameLevel, GameName
@@ -27,7 +27,8 @@ class DBManager:
         self.session.commit()
 
     def update_record(self, model, id, fields: dict):
-        self.session.query(model).filter_by(id=id).update(fields)
+        stmt = update(model).where(model.id == id).values(**fields)
+        self.session.execute(stmt)
         self.session.commit()
 
     def rollback(self):
