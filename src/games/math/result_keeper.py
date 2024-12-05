@@ -111,6 +111,7 @@ class ResultKeeper:
             else:
                 self.points.answers_status.append(False)
                 self.lives_left -= 1
+                self.points.update_points(True)
                 if self.lives_left == 0:
                     return None
 
@@ -139,9 +140,7 @@ class ResultKeeper:
         self.is_init = True
         self.create_payload()
         while True:
-            round_result = yield from self.round()
-            if not round_result:
-                return
+            yield from self.round()
 
             if all(self.points.answers_status):
                 self.points.answers_status = []

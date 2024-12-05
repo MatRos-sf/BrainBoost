@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Dict, List
+from typing import Tuple
 
 from src.exceptions.database_exceptions import UserNotFoundException
 
@@ -20,18 +20,23 @@ class UserSession:
     id: int
     username: str
     points: int
-    stats: List[GameStatistic]
+    stats: Tuple[GameName, GameStatistic]
 
     @classmethod
     def parse_data(cls, data):
-        games = [
-            GameStatistic(id=game.id, game=game.game_name, level=game.level)
+        print(data)
+        games = {
+            game.game_name.value: GameStatistic(
+                id=game.id, game=game.game_name, level=game.level
+            )
             for game in data.game_levels
-        ]
+        }
         return cls(id=data.id, username=data.username, points=data.points, stats=games)
 
 
 class GameManager:
+    NAME_GAME = None
+
     def __init__(self, database_url=DATABASE_URL):
         self.db = DBManager(database_url)
         self._current_session = None
@@ -50,17 +55,24 @@ class GameManager:
     def current_session(self) -> None:
         self._current_session = None
 
-    def update_session(self, attributes: Dict[str, str | int]) -> None:
+    def update_points(self, points) -> None:
         """
         Update the current session with the provided attributes.
-        When the attribute is not a attribute of UserSession raise a ValueError
+        When the attribute is not an attribute of UserSession raise a ValueError
         """
-        user_session_attributes = UserSession.__annotations__.keys()
-        for key, value in attributes.items():
-            if key in user_session_attributes:
-                setattr(self.current_session, key, value)
-            else:
-                raise ValueError(f"Invalid attribute: {key}")
+        self.current_session.points += points
+
+    def update_level_of_game(self, game_name: GameName, level: int):
+        """
+        Update the level of game in the current session with the provided attributes.
+        When the attribute is not an attribute of GameLevel raise a ValueError
+        """
+        game_stats = self.current_session.stats.get(game_name.value)
+        if not game_stats:
+            raise ValueError(f"Game {game_name}not found in current session")
+
+        game_stats.level = level
+        self.current_session.stats[game_name.value] = game_stats
 
     def _check_games(self, user: User):
         """
