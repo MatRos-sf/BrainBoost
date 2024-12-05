@@ -7,13 +7,12 @@ from kivy.uix.checkbox import CheckBox
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
 from kivy.uix.popup import Popup
-from kivy.uix.screenmanager import Screen
 from kivy.uix.textinput import TextInput
 
-from ..db.session import GameManager, UserSession
-from ..models.games import GameLevel, GameName
+from ..db.session import GameManager
 from ..models.user import Login, User
-from ..user.session import hash_password, verify_password
+from ..user.session import verify_password
+from .base_screen import BaseScreen
 
 
 class MessagePopup(Popup):
@@ -43,10 +42,9 @@ class MessagePopup(Popup):
         self.content = content
 
 
-class LoginScreen(Screen):
+class LoginScreen(BaseScreen):
     def __init__(self, session_manager: GameManager, **kwargs):
-        super(LoginScreen, self).__init__(**kwargs)
-        self.session_manager = session_manager
+        super(LoginScreen, self).__init__(session_manager, **kwargs)
         self._popup = []  # List to store active popups
 
         # Initialize widgets
@@ -138,7 +136,6 @@ class LoginScreen(Screen):
         popup.open()
 
     def authorization(self, instance):
-        print(self.session_manager.current_session)
         username = self.user_field.text.strip()
         password = self.password_field.text
 
@@ -154,21 +151,9 @@ class LoginScreen(Screen):
                 self.save_credentials(username, password)
             # save login
             self.session_manager.db.add_record(Login, user_id=user.id)
-            # check that all stats game are loaded
-            if len(user.game_levels) < len(GameName):
-                for game in GameName:
-                    if (
-                        len(list(filter(lambda x: x.game == game, user.game_levels)))
-                        == 0
-                    ):
-                        self.session_manager.db.add_record(
-                            GameLevel, user_id=user.id, game_name=game, level=1
-                        )
-                user = self.session_manager.db.find_record(User, username=username)
-
-            # Set user session in both app and screen
-            self.session_manager.current_session = UserSession.parse_data(user)
-            # self.user_session = UserSession(user.id, user.username, user.points)
+            # load the current_session
+            self.session_manager.load_session(user.id)
+            # go to the 'menu' screen
             self.manager.current = "menu"
         else:
             self.show_message(
@@ -199,22 +184,21 @@ class LoginScreen(Screen):
             except (IOError, json.JSONDecodeError) as e:
                 print(f"Error loading credentials: {e}")
 
-    def switch_to_create_account(self, instance):
+    def switch_to_create_account(self, instance) -> None:
         self.manager.current = "create_account"
 
-    def on_user_field_enter(self, instance):
+    def on_user_field_enter(self, instance) -> None:
         """When user presses enter in username field, focus moves to password field"""
         self.password_field.focus = True
 
-    def on_password_field_enter(self, instance):
+    def on_password_field_enter(self, instance) -> None:
         """When user presses enter in password field, call authorization method"""
         self.authorization(instance)
 
 
-class CreateAccountScreen(Screen):
-    def __init__(self, session_manager: GameManager, **kwargs):
-        super(CreateAccountScreen, self).__init__(**kwargs)
-        self.session_manager = session_manager
+class CreateAccountScreen(BaseScreen):
+    def __init__(self, session_manager: GameManager, **kwargs) -> None:
+        super(CreateAccountScreen, self).__init__(session_manager, **kwargs)
         self.layout = GridLayout()
         self.layout.cols = 1
         self.layout.size_hint = (0.6, 0.7)
@@ -263,47 +247,43 @@ class CreateAccountScreen(Screen):
         # Add the layout only once
         self.add_widget(self.layout)
 
-    def create_account(self, instance):
-        try:
-            # Validate input
-            username = self.user_field.text.strip()
-            if not username:
-                self.info_label.text = "Username cannot be empty!"
-                return
+    def validation_password(self, password_one, password_two):
+        if password_one != password_two:
+            self.info_label.text = "Passwords do not match!"
+            return False
 
-            password_one = self.password_field_one.text
-            password_two = self.password_field_two.text
+        if len(password_one) <= 5:
+            self.info_label.text = "Password must be longer than 5 characters!"
+            return False
+        return True
 
-            if password_one != password_two:
-                self.info_label.text = "Passwords do not match!"
-                return
+    def create_account(self, instance) -> None:
+        # Validate input
+        username = self.user_field.text.strip()
+        if not username:
+            self.info_label.text = "Username cannot be empty!"
+            return
+        # Check if username exists
+        elif self.session_manager.db.find_record(User, username=username):
+            self.info_label.text = "Username already exists!"
+            return
 
-            if len(password_one) <= 5:
-                self.info_label.text = "Password must be longer than 5 characters!"
-                return
+        password_one = self.password_field_one.text
+        password_two = self.password_field_two.text
+        # check passwords validation
+        if not self.validation_password(password_one, password_two):
+            return
 
-            # Check if username exists
-            existing_user = self.session_manager.db.find_record(User, username=username)
-            if existing_user:
-                self.info_label.text = "Username already exists!"
-                return
+        # Create a new user with game levels
+        self.session_manager.db.create_account(username, password_one)
 
-            # Create new user with game levels
-            self.session_manager.db.create_account(
-                username, hash_password(password_one)
-            )
+        self.info_label.text = "Account created successfully!"
+        self.manager.current = "login"
 
-            self.info_label.text = "Account created successfully!"
-            self.manager.current = "login"
-
-        except Exception as e:
-            self.session_manager.db.rollback()
-            self.info_label.text = f"Error creating account: {str(e)}"
-
-    def on_user_field_enter(self, instance):
+    def on_user_field_enter(self, instance) -> None:
         """When user presses enter in username field, focus moves to first password field"""
         self.password_field_one.focus = True
 
-    def on_password_one_enter(self, instance):
+    def on_password_one_enter(self, instance) -> None:
         """When user presses enter in first password field, focus moves to second password field"""
         self.password_field_two.focus = True

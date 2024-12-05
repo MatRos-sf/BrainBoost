@@ -1,8 +1,9 @@
-from sqlalchemy import Engine, create_engine
+from sqlalchemy import Engine, create_engine, update
 from sqlalchemy.orm import sessionmaker
 
 from ..models.games import GameLevel, GameName
 from ..models.user import User
+from ..user.session import hash_password
 
 DATABASE_URL = "sqlite:///db.sqlite"
 
@@ -26,13 +27,16 @@ class DBManager:
         self.session.commit()
 
     def update_record(self, model, id, fields: dict):
-        self.session.query(model).filter_by(id=id).update(fields)
+        stmt = update(model).where(model.id == id).values(**fields)
+        self.session.execute(stmt)
         self.session.commit()
 
     def rollback(self):
         self.session.rollback()
 
-    def create_account(self, username, password):
+    def create_account(self, username: str, password: str):
+        # Hash the password
+        password = hash_password(password)
         try:
             # First create and commit the user
             user = User(username=username, password=password)
