@@ -12,10 +12,16 @@ class LanguagePrefix(Enum):
     EN = "en"
 
 
+class Color(Enum):
+    RED = "#FF0000"
+    YELLOW = "#FFFF00"
+    GREEN = "#00FF00"
+
+
 class AssociativeChaining:
-    BAD_ANSWER_COLOR = "red"
-    CORRECT_ANSWER_COLOR = "yellow"
-    GOOD_ANSWER_COLOR = "green"
+    BAD_ANSWER_COLOR = Color.RED.value
+    CORRECT_ANSWER_COLOR = Color.YELLOW.value
+    GOOD_ANSWER_COLOR = Color.GREEN.value
 
     def __init__(self, level: int, language: LanguagePrefix = LanguagePrefix.PL):
         self.level = level
