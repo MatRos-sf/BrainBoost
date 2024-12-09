@@ -13,6 +13,7 @@ class BaseGamaScreen(BaseScreen):
         super(BaseGamaScreen, self).__init__(session_manager, **kwargs)
         self.timer_event: Optional[Clock] = None
         self.countdown_event = None
+        self.timer = 0
 
     def start_timer(self):
         self.timer_event = Clock.schedule_interval(self.update_timer, 1)

@@ -1,0 +1,97 @@
+#:kivy 2.0.0
+
+<AssociativeChainingScreen>:
+    info_label: info_label
+    timer_label: timer_label
+    question_label: question_label
+    answer_field: answer_field
+    start_button: start_button
+    try_again_button: try_again_button
+    back_to_menu_button: back_to_menu_button
+    buttons_layout: buttons_layout
+    game_layout: game_layout
+
+    FloatLayout:
+        id: float_layout
+        size_hint: 1, 1
+        pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+        GridLayout:
+            id: game_layout
+            cols: 1
+            spacing: 10
+            padding: 10
+            size_hint: 0.8, 0.8
+            pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+
+            GridLayout:
+                cols: 2
+                spacing: 10
+                size_hint: 1, 0.15
+
+                Label:
+                    id: info_label
+                    text: "Info Label"
+                    font_size: 18
+                    halign: "center"
+                    valign: "middle"
+                    opacity: 1  # Initially visible
+                    color: 0, 0, 0, 1
+
+                Label:
+                    id: timer_label
+                    text: "Time left: 60s"
+                    font_size: 18
+                    halign: "center"
+                    valign: "middle"
+                    opacity: 1  # Initially visible
+                    color: 1, 1, 1, 1
+
+            Label:
+                id: question_label
+                text: ""
+                markup: True
+                font_size: 18
+                halign: "center"
+                valign: "middle"
+                opacity: 1  # Initially visible
+                color: 0, 1, 0, 1
+
+            TextInput:
+                id: answer_field
+                hint_text: "Answer"
+                multiline: True
+                padding: 20, 20, 20, 20
+                size_hint: 1, 0.25
+                opacity: 0
+                color: 0, 0, 1, 1  # Changed to blue to distinguish from question
+
+            Button:
+                id: start_button
+                text: "Start"  # Initial button text
+                size_hint: 1, 0.25
+                background_color: 0.2, 0.6, 1, 1
+                on_press: root.start_game(self)
+
+            GridLayout:
+                id: buttons_layout
+                cols: 2
+                spacing: 10
+                padding: 10
+                size_hint: 1, 0.15
+                opacity: 0  # Initially hidden
+
+                Button:
+                    id: try_again_button
+                    text: "Try Again"
+                    on_press: root.try_again(self)
+                    size_hint: 0.5, 1
+                    background_color: 0.2, 0.6, 1, 1
+                    disabled: self.parent.opacity == 0
+
+                Button:
+                    id: back_to_menu_button
+                    text: "Back to Menu"
+                    on_press: root.back_to_menu(self)
+                    size_hint: 0.5, 1
+                    background_color: 0.8, 0.2, 0.2, 1
+                    disabled: self.parent.opacity == 0
