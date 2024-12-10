@@ -124,6 +124,7 @@ class ResultKeeper:
         a, b = payload[0], payload[1]
         result = self.calculate(a, b, chars[0])
         answer = yield from self._get_answer(result, self._question(a, b, chars[0]))
+        print(f"Answer  {answer}")
         if answer is None:
             return None
         # Subsequent questions
@@ -141,7 +142,9 @@ class ResultKeeper:
         self._is_init = True
         self.create_payload()
         while True:
-            yield from self.round()
+            answer = yield from self.round()
+            if answer is None:
+                return None
 
             if all(self.points.answers_status):
                 self.points.answers_status = []
