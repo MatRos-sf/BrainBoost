@@ -11,4 +11,4 @@ class Points:
         if is_wrong_answer:
             self.points -= self.level * bonus
         else:
-            self.points += self.level
+            self.points += self.level * bonus
