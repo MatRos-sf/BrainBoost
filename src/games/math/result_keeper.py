@@ -9,7 +9,7 @@ class ResultKeeper:
         self.level = level
         self.payload = []
         self.points = Points(level)
-        self.is_init = False
+        self._is_init = False
         self.lives_left = 3
 
     @property
@@ -96,7 +96,7 @@ class ResultKeeper:
 
     def _question(self, a: int, b: int, char: str):
         """Helper method to generate questions"""
-        return f"{a} {char} {b} = " if self.is_init else f"{char} {b}"
+        return f"{a} {char} {b} = " if self._is_init else f"{char} {b}"
 
     def _get_answer(
         self, expected_result: int, question: str
@@ -106,7 +106,7 @@ class ResultKeeper:
             answer = yield question, False
             if answer == expected_result:
                 self.points.update_points()
-                self.is_init = False
+                self._is_init = False
                 yield question, True  # Signal success to the UI
                 return answer  # Return for next calculation
             else:
@@ -124,6 +124,7 @@ class ResultKeeper:
         a, b = payload[0], payload[1]
         result = self.calculate(a, b, chars[0])
         answer = yield from self._get_answer(result, self._question(a, b, chars[0]))
+        print(f"Answer  {answer}")
         if answer is None:
             return None
         # Subsequent questions
@@ -138,10 +139,12 @@ class ResultKeeper:
 
     def run(self) -> Generator[tuple[str, bool], int, None]:
         """Run the game, yielding (question, is_correct) tuples and accepting answers"""
-        self.is_init = True
+        self._is_init = True
         self.create_payload()
         while True:
-            yield from self.round()
+            answer = yield from self.round()
+            if answer is None:
+                return None
 
             if all(self.points.answers_status):
                 self.points.answers_status = []

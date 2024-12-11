@@ -5,6 +5,7 @@ from src.db.session import GameManager
 
 from ..db.db import DATABASE_URL
 from .authorization import CreateAccountScreen, LoginScreen
+from .games.associative_changing import AssociativeChainingScreen
 from .games.result_keeper import ResultKeeperScreen
 from .menu import MenuScreen
 
@@ -27,6 +28,11 @@ class MyApp(App):
         sm.add_widget(
             ResultKeeperScreen(
                 session_manager=self.session_manager, name="result_keeper_game"
+            )
+        )
+        sm.add_widget(
+            AssociativeChainingScreen(
+                session_manager=self.session_manager, name="associative_changing_game"
             )
         )
         sm.current = "login"
