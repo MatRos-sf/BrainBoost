@@ -19,7 +19,6 @@ class ResultKeeperScreen(BaseGamaScreen):
         super(ResultKeeperScreen, self).__init__(session_manager, **kwargs)
 
         self.result_keeper = None
-        self.game = None
         self.time_left = ResultKeeperScreen.TIME_LEFT  # 60 seconds for the game
         self.countdown = 3
 
@@ -147,10 +146,6 @@ class ResultKeeperScreen(BaseGamaScreen):
         # Start new game
         self.start_new_game()
 
-    def on_leave(self):
-        """Clean up when leaving the screen"""
-        self.cleanup_clock_events()
-
     def start_new_game(self):
         """Start a new game with countdown"""
         self.cleanup_clock_events()
@@ -167,18 +162,3 @@ class ResultKeeperScreen(BaseGamaScreen):
         self.hide_end_game_buttons()
         # Start countdown again
         self.countdown_event = Clock.schedule_interval(self.start_countdown, 1)
-
-    def back_to_menu(self, instance):
-        """Return to the main menu after clearing session"""
-        self.cleanup_clock_events()
-        self.manager.current = "menu"
-
-    def show_end_game_buttons(self):
-        """Show the try again and back to menu buttons"""
-        if hasattr(self, "buttons_layout"):
-            self.buttons_layout.opacity = 1
-
-    def hide_end_game_buttons(self):
-        """Hide the try again and back to menu buttons"""
-        if hasattr(self, "buttons_layout"):
-            self.buttons_layout.opacity = 0
