@@ -37,7 +37,8 @@ class AssociativeChaining:
 
     @property
     def size(self) -> int:
-        return AssociativeChaining.START_SIZE + self.level - 1
+        size = AssociativeChaining.START_SIZE + self.level - 1
+        return size if size <= 100 else 100
 
     def create_payload(self):
         with open(self.path_file, encoding="utf-8") as file:
