@@ -5,7 +5,7 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 from sqlmodel import SQLModel
 
-from src.models.games import GameLevel, GameSession
+from src.models.games import ResultKeeperModel
 from src.models.user import Login, User
 
 # this is the Alembic Config object, which provides
