@@ -4,7 +4,9 @@ from kivy.uix.label import Label
 
 from src.db.session import GameManager
 
+from ..models.games import GameName
 from .base_screen import BaseScreen
+from .games.popups import InstructionPopup
 
 
 class MenuScreen(BaseScreen):
@@ -42,13 +44,24 @@ class MenuScreen(BaseScreen):
         points = self.session_manager.current_session.points
         username = self.session_manager.current_session.username
         self.user_info.text = f"Welcome {username}!\nPoints: {points}"
+        print(self.session_manager.current_session)
 
     def go_back(self, instance) -> None:
         del self.session_manager.current_session
         self.manager.current = "login"
 
     def start_game_result_keeper(self, instance) -> None:
-        self.manager.current = "result_keeper_game"
+        level = self.session_manager.get_level_game(GameName.RESULT_KEEPER)
+        if level is None:
+            popup = InstructionPopup(
+                title="Game result",
+                message="It's your first time ;) GL",
+                manager=self.manager,
+                target_screen="result_keeper_game",
+            )
+            popup.open()
+        else:
+            self.manager.current = "result_keeper_game"
 
     def start_game_as(self, instance) -> None:
         self.manager.current = "associative_changing_game"
