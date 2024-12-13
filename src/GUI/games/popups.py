@@ -42,4 +42,4 @@ class InstructionPopup(Popup):
 
     def go_to_screen(self, *args):
         self.dismiss()
-        self.manager.current = self.title_screen
+        self.manager.current = self.target_screen
