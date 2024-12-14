@@ -11,25 +11,35 @@ class GameName(StrEnum):
     RESULT_KEEPER = "Result Keeper"
 
 
-class GameLevel(ModelBase, table=True):
-    __tablename__ = "game_level"
+class ResultKeeperModel(ModelBase, table=True):
+    __tablename__ = "result_keeper_table"
 
     id: Optional[int] = Field(default=None, primary_key=True)
     user_id: int = Field(foreign_key="user_table.id")
+    user: "User" = Relationship(back_populates="result_keeper")  # noqa: F821
     game_name: GameName
     level: int = Field(default=1)
-    user: "User" = Relationship(back_populates="game_levels")  # noqa: F821
-    game_sessions: List["GameSession"] = Relationship(back_populates="game_level")
+    result_keeper_session: List["ResultKeeperSessionModel"] = Relationship(
+        back_populates="result_keeper"
+    )
 
 
-class GameSession(ModelBase, table=True):
-    __tablename__ = "game_session"
-
+class ResultKeeperSessionModel(ModelBase, table=True):
+    __tablename__ = "result_keeper_session_table"
     id: Optional[int] = Field(default=None, primary_key=True)
-    game_level_id: int = Field(foreign_key="game_level.id")
-    finished: datetime.datetime = Field(default_factory=datetime.datetime.now)
+    result_keeper_id: int = Field(foreign_key="result_keeper_table.id")
+    result_keeper: ResultKeeperModel = Relationship(
+        back_populates="result_keeper_session"
+    )
+
+    # stats
+    range_min: int = Field(default=0)
+    range_max: int
+    points_earned: int
     started_level: int
     finished_level: int
-    points_earned: int
-    duration: Optional[int] = Field(default=None)
-    game_level: "GameLevel" = Relationship(back_populates="game_sessions")
+    duration: int = Field(default=60)  # here implemented
+    finished_datetime: datetime.datetime = Field(default_factory=datetime.datetime.now)
+    steps: int
+    wrong_answers: int
+    correct_answers: int
