@@ -4,7 +4,7 @@ from typing import List, Optional
 from sqlmodel import Field, Relationship
 
 from . import ModelBase
-from .games import GameLevel
+from .games import ResultKeeperModel
 
 
 class User(ModelBase, table=True):
@@ -18,7 +18,8 @@ class User(ModelBase, table=True):
 
     # stats
     points: int = Field(default=0)
-    game_levels: List[GameLevel] = Relationship(back_populates="user")
+    # games one-to-one relationship
+    result_keeper: Optional["ResultKeeperModel"] = Relationship(back_populates="user")
 
 
 class Login(ModelBase, table=True):
