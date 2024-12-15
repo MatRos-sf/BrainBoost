@@ -5,8 +5,8 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 from sqlmodel import SQLModel
 
-from src.models.games import ResultKeeperModel, ResultKeeperSessionModel
-from src.models.user import Login, User
+from src.models.games import ResultKeeperModel, ResultKeeperSessionModel, AssociativeChangingSessionModel, AssociativeChangingModel
+from src.models.user import Login, User, PointsModel
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

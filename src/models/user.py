@@ -24,6 +24,9 @@ class User(ModelBase, table=True):
     points: List["PointsModel"] = Relationship(back_populates="user")
     # games one-to-one relationship
     result_keeper: Optional["ResultKeeperModel"] = Relationship(back_populates="user")
+    associative_changing: Optional[
+        "AssociativeChangingModel"  # noqa: F821
+    ] = Relationship(back_populates="user")
 
     # TODO: scal day -> [PN,NDZ]
 

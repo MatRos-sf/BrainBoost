@@ -1,7 +1,7 @@
 from sqlalchemy import Engine, create_engine, update
 from sqlalchemy.orm import sessionmaker
 
-from ..models.games import GameName, ResultKeeperModel
+from ..models.games import AssociativeChangingModel, GameName, ResultKeeperModel
 from ..models.user import PointsCategory, PointsModel, User
 from ..user.session import hash_password
 
@@ -69,3 +69,9 @@ class DBManager:
         match game_name:
             case GameName.RESULT_KEEPER:
                 self.add_record(ResultKeeperModel, user_id=user_id, game_name=game_name)
+            case GameName.ASSOCIATIVE_CHANGING:
+                self.add_record(
+                    AssociativeChangingModel, user_id=user_id, game_name=game_name
+                )
+            case _:
+                raise ValueError("Invalid game name. Please implement new case!")
