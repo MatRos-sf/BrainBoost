@@ -18,7 +18,7 @@ class ResultKeeperModel(ModelBase, table=True):
     user_id: int = Field(foreign_key="user_table.id")
     user: "User" = Relationship(back_populates="result_keeper")  # noqa: F821
     game_name: GameName
-    level: int = Field(default=1)
+    level: int = Field(default=None, nullable=True)
     result_keeper_session: List["ResultKeeperSessionModel"] = Relationship(
         back_populates="result_keeper"
     )
