@@ -3,6 +3,7 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
 
 from src.db.session import GameManager
+from src.models.user import PointsCategory
 
 from ..models.games import GameName
 from .base_screen import BaseScreen
@@ -41,7 +42,7 @@ class MenuScreen(BaseScreen):
 
     def on_enter(self) -> None:
         # Update user_session when screen is entered
-        points = self.session_manager.current_session.points
+        points = self.session_manager.current_session.point
         username = self.session_manager.current_session.username
         self.user_info.text = f"Welcome {username}!\nPoints: {points}"
         print(self.session_manager.current_session)
@@ -53,6 +54,10 @@ class MenuScreen(BaseScreen):
     def start_game_result_keeper(self, instance) -> None:
         level = self.session_manager.get_level_game(GameName.RESULT_KEEPER)
         if level is None:
+            self.session_manager.db.add_points_for_first_game(
+                user_id=self.session_manager.current_session.id,
+                category=PointsCategory.FIRST_RESULT_KEEPER,
+            )
             popup = InstructionPopup(
                 title="Game result",
                 message="It's your first time ;) GL",
