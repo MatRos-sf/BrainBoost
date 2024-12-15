@@ -6,7 +6,7 @@ from kivy.lang import Builder
 from src.db.session import GameManager
 from src.games.math import ResultKeeper
 from src.GUI.messages.messages import message_ends_game
-from src.models.user import User
+from src.models.user import PointsCategory
 
 from ...models.games import GameName, ResultKeeperModel, ResultKeeperSessionModel
 from .base_game_screen import BaseGamaScreen
@@ -41,7 +41,9 @@ class ResultKeeperScreen(BaseGamaScreen):
     def initialize_game_state(self):
         """Initialize or reset the game state"""
         # TODO: this should be removed, in the menu screen should be set user stats!!
-        self.find_innit_level(ResultKeeperModel)
+        self.find_innit_level(
+            ResultKeeperModel, PointsCategory.FIRST_RESULT_KEEPER.value[1]
+        )
 
         self.result_keeper = ResultKeeper(self.init_level)
         self.info_label.text = f"{self.result_keeper.lives_left}"
@@ -101,10 +103,10 @@ class ResultKeeperScreen(BaseGamaScreen):
 
     def game_over(self, is_end_time: bool = True):
         self.cleanup_clock_events()
-        points = self.result_keeper.points.points
+        earned_points = self.result_keeper.points.points
         level = self.result_keeper.level  # level reached in game
 
-        message_content = message_ends_game(points, level, is_end_time)
+        message_content = message_ends_game(earned_points, level, is_end_time)
         self.info_label.text = message_content
         self.answer_field.disabled = True
         self.save_stats()
@@ -173,13 +175,15 @@ class ResultKeeperScreen(BaseGamaScreen):
                 b. Update the level in the current session
             4. Update points in the current session
         """
-        user = self.session_manager.current_session  # TODO: change name its UserSession
+        user_session = (
+            self.session_manager.current_session
+        )  # TODO: change name its UserSession
         game_stats = self.result_keeper.get_stats()
         started_level = game_stats.get("started_level")
         finished_level = game_stats.get("finished_level")
-        points = game_stats.get("points_earned")
+        earned_point = game_stats.get("points_earned")
 
-        game = user.stats.get(self.NAME_GAME.value)
+        game = user_session.stats.get(self.NAME_GAME.value)
         # Save session stats
         self.session_manager.db.add_record(
             ResultKeeperSessionModel,
@@ -188,8 +192,11 @@ class ResultKeeperScreen(BaseGamaScreen):
             **game_stats,
         )
 
-        payload = {"points": User.points + points}
-        self.session_manager.db.update_record(User, user.id, payload)
+        self.session_manager.db.add_points_for_game(
+            user_id=user_session.id,
+            point=earned_point,
+            category=PointsCategory.GAME_RESULT_KEEPER,
+        )
         if started_level < finished_level:
             # update level
             self.session_manager.db.update_record(
@@ -198,4 +205,4 @@ class ResultKeeperScreen(BaseGamaScreen):
             # update level in current session
             self.session_manager.update_level_of_game(self.NAME_GAME, finished_level)
         # update points in current session
-        self.session_manager.update_points(points)
+        self.session_manager.update_point(earned_point)

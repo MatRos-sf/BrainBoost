@@ -115,7 +115,7 @@ class AssociativeChainingScreen(BaseGamaScreen):
         return [f"[color={color}]{text or ''}[/color]" for text, color in colors]
 
     def __finished_message(self):
-        points = self.associative_chaining.points.points
+        points = self.associative_chaining.points.point
         return f"\nYou earned {points} points.\nYou have memorized {self.associative_chaining.memorized} nouns and forgotten {self.associative_chaining.forgot} nouns and missed {self.associative_chaining.missed}\n"
 
     def show_user_answer(self, user_answer: List[Tuple[str, str]]):

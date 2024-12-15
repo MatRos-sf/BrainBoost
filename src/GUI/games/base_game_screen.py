@@ -16,7 +16,7 @@ class BaseGamaScreen(BaseScreen):
         self.time = 0
         self.init_level = None
 
-    def find_innit_level(self, model: ResultKeeperModel):
+    def find_innit_level(self, model: ResultKeeperModel, init_points: int):
         """Finds the current level of the game."""
         if not self.session_manager:
             level = 1
@@ -33,6 +33,8 @@ class BaseGamaScreen(BaseScreen):
                     }
                 )
 
+                # update session
+                self.session_manager.update_point(init_points)
         self.init_level = level
 
     def start_timer(self):
