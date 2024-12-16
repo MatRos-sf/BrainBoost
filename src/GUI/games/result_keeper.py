@@ -40,10 +40,7 @@ class ResultKeeperScreen(BaseGamaScreen):
 
     def initialize_game_state(self):
         """Initialize or reset the game state"""
-        # TODO: this should be removed, in the menu screen should be set user stats!!
-        self.find_innit_level(
-            ResultKeeperModel, PointsCategory.FIRST_RESULT_KEEPER.value[1]
-        )
+        self.find_innit_level(PointsCategory.FIRST_RESULT_KEEPER.value[1])
 
         self.result_keeper = ResultKeeper(self.init_level)
         self.info_label.text = f"{self.result_keeper.lives_left}"
@@ -175,9 +172,7 @@ class ResultKeeperScreen(BaseGamaScreen):
                 b. Update the level in the current session
             4. Update points in the current session
         """
-        user_session = (
-            self.session_manager.current_session
-        )  # TODO: change name its UserSession
+        user_session = self.session_manager.current_session
         game_stats = self.result_keeper.get_stats()
         started_level = game_stats.get("started_level")
         finished_level = game_stats.get("finished_level")
