@@ -4,7 +4,6 @@ from kivy.clock import Clock
 
 from src.db.session import GameManager
 from src.GUI.base_screen import BaseScreen
-from src.models.games import ResultKeeperModel
 
 
 class BaseGamaScreen(BaseScreen):
@@ -16,7 +15,7 @@ class BaseGamaScreen(BaseScreen):
         self.time = 0
         self.init_level = None
 
-    def find_innit_level(self, model: ResultKeeperModel, init_points: int):
+    def find_innit_level(self, init_points: int):
         """Finds the current level of the game."""
         if not self.session_manager:
             level = 1
@@ -24,15 +23,6 @@ class BaseGamaScreen(BaseScreen):
             level = self.session_manager.get_level_game(self.NAME_GAME)
             if level is None:
                 level = 1
-                self.session_manager.db.add_record(
-                    model,
-                    **{
-                        "level": 1,
-                        "user_id": self.session_manager.current_session.id,
-                        "game_name": self.NAME_GAME.value,
-                    }
-                )
-
                 # update session
                 self.session_manager.update_point(init_points)
         self.init_level = level
