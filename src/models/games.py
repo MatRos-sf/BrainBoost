@@ -66,15 +66,14 @@ class AssociativeChangingModel(GameModel, table=True):
 
 class AssociativeChangingSessionModel(SessionModel, table=True):
     __tablename__ = "associative_changing_session_table"
-    result_keeper_id: int = Field(foreign_key="associative_changing_table.id")
+    associative_changing_id: int = Field(foreign_key="associative_changing_table.id")
     associative_changing: AssociativeChangingModel = Relationship(
         back_populates="session"
     )
 
     # stats
-    steps: int
     words: str
     user_answers: str
     amt_words: int
-    skip_answer: int
+    skip_answers: int
     memorization_time: int  # when user press start answer

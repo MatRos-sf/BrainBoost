@@ -56,6 +56,8 @@ class PointsCategory(Enum):
     # Games
     GAME_RESULT_KEEPER = "Game Result Keeper", -1
     FIRST_RESULT_KEEPER = "First Game Result Keeper", 10
+    GAME_ASSOCIATIVE_CHANGING = "Game Associative Changing", -1
+    FIRST_ASSOCIATIVE_CHANGING = "First Game Associative Changing", 10
 
 
 class PointsModel(ModelBase, table=True):
