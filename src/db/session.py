@@ -44,12 +44,19 @@ class GameManager:
     def current_session(self) -> None:
         self._current_session = None
 
-    def get_level_game(self, game_name: GameName) -> Optional[int]:
+    def current_session_validation(self):
         if not self.current_session:
             raise ValueError("No current session set")
 
+    def get_level_game(self, game_name: GameName) -> Optional[int]:
+        self.current_session_validation()
         game_stats = self.current_session.stats.get(game_name.value)
         return game_stats.level
+
+    def get_id_game(self, game_name: GameName) -> Optional[int]:
+        self.current_session_validation()
+        game_stats = self.current_session.stats.get(game_name.value)
+        return game_stats.id
 
     def update_point(self, point) -> None:
         """
