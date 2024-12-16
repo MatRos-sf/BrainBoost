@@ -70,7 +70,7 @@ class TestAssociativeChaining:
         associative_chaining.payload = answer
         associative_chaining.check_answer(answer)
 
-        assert associative_chaining.points.points == 6
+        assert associative_chaining.points.point == 6
 
     def test_check_answer_should_return_correct_points_if_all_answers_are_bad(self):
         associative_chaining = AssociativeChaining(1)
@@ -78,7 +78,7 @@ class TestAssociativeChaining:
         associative_chaining.payload = ["d", "e", "f"]
         associative_chaining.check_answer(answer)
 
-        assert associative_chaining.points.points == -3
+        assert associative_chaining.points.point == -3
 
     def test_check_answer_should_return_correct_points_if_all_answers_are_good_but_in_the_wrong_order(
         self,
@@ -88,7 +88,7 @@ class TestAssociativeChaining:
         associative_chaining.payload = answer
         associative_chaining.check_answer(["b", "c", "a"])
 
-        assert associative_chaining.points.points == 3
+        assert associative_chaining.points.point == 3
 
     def test_check_answer_should_avoid_answer_when_answer_is_dash_and_donot_add_points(
         self,
@@ -98,7 +98,7 @@ class TestAssociativeChaining:
         associative_chaining.payload = answer
         result = associative_chaining.check_answer(["-", "-", "-"])
 
-        assert associative_chaining.points.points == 0
+        assert associative_chaining.points.point == 0
 
         for _, color in result:
             assert color == AssociativeChaining.BAD_ANSWER_COLOR

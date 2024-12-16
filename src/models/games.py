@@ -9,27 +9,71 @@ from . import ModelBase
 
 class GameName(StrEnum):
     RESULT_KEEPER = "Result Keeper"
+    ASSOCIATIVE_CHANGING = "Associative Changing"
 
 
-class GameLevel(ModelBase, table=True):
-    __tablename__ = "game_level"
-
+class GameModel(ModelBase):
+    __abstract__ = True
     id: Optional[int] = Field(default=None, primary_key=True)
     user_id: int = Field(foreign_key="user_table.id")
+
     game_name: GameName
-    level: int = Field(default=1)
-    user: "User" = Relationship(back_populates="game_levels")  # noqa: F821
-    game_sessions: List["GameSession"] = Relationship(back_populates="game_level")
+    level: int = Field(default=None, nullable=True)
 
 
-class GameSession(ModelBase, table=True):
-    __tablename__ = "game_session"
+class SessionModel(ModelBase):
+    __abstract__ = True
 
     id: Optional[int] = Field(default=None, primary_key=True)
-    game_level_id: int = Field(foreign_key="game_level.id")
-    finished: datetime.datetime = Field(default_factory=datetime.datetime.now)
+    points_earned: int
     started_level: int
     finished_level: int
-    points_earned: int
-    duration: Optional[int] = Field(default=None)
-    game_level: "GameLevel" = Relationship(back_populates="game_sessions")
+    duration: int = Field(default=60)  # here implemented
+    finished_datetime: datetime.datetime = Field(default_factory=datetime.datetime.now)
+    wrong_answers: int
+    correct_answers: int
+
+
+class ResultKeeperModel(GameModel, table=True):
+    __tablename__ = "result_keeper_table"
+
+    user: "User" = Relationship(back_populates="result_keeper")  # noqa: F821
+    level: int = Field(default=None, nullable=True)
+    sessions: List["ResultKeeperSessionModel"] = Relationship(
+        back_populates="result_keeper"
+    )
+
+
+class ResultKeeperSessionModel(SessionModel, table=True):
+    __tablename__ = "result_keeper_session_table"
+    result_keeper_id: int = Field(foreign_key="result_keeper_table.id")
+    result_keeper: ResultKeeperModel = Relationship(back_populates="sessions")
+
+    # stats
+    range_min: int = Field(default=0)
+    range_max: int
+    steps: int
+
+
+class AssociativeChangingModel(GameModel, table=True):
+    __tablename__ = "associative_changing_table"
+
+    user: "User" = Relationship(back_populates="associative_changing")  # noqa: F821
+    session: List["AssociativeChangingSessionModel"] = Relationship(
+        back_populates="associative_changing"
+    )
+
+
+class AssociativeChangingSessionModel(SessionModel, table=True):
+    __tablename__ = "associative_changing_session_table"
+    associative_changing_id: int = Field(foreign_key="associative_changing_table.id")
+    associative_changing: AssociativeChangingModel = Relationship(
+        back_populates="session"
+    )
+
+    # stats
+    words: str
+    user_answers: str
+    amt_words: int
+    skip_answers: int
+    memorization_time: int  # when user press start answer

@@ -1,5 +1,5 @@
 import random
-from typing import Generator, List, Optional
+from typing import Dict, Generator, List, Optional
 
 from src.games.points import Points
 
@@ -7,14 +7,30 @@ from src.games.points import Points
 class ResultKeeper:
     def __init__(self, level: int):
         self.level = level
+        self.level_start = self.level
         self.payload = []
         self.points = Points(level)
         self._is_init = False
         self.lives_left = 3
+        self.steps = 0
+        self.finish_round = False
+        self.range_min = 0
 
     @property
     def range_size(self):
         return 5 + self.level * 5
+
+    def get_stats(self) -> Dict[str, int]:
+        return {
+            "range_min": self.range_min,
+            "range_max": self.range_size,
+            "points_earned": self.points.points,
+            "started_level": self.level_start,
+            "finished_level": self.level,
+            "steps": self.steps,
+            "wrong_answers": self.points.wrong_answer,
+            "correct_answers": self.points.correct_answers,
+        }
 
     def _set_math_char(self, math_char: Optional[List[str]] = None) -> List[str]:
         """Generate a sequence of mathematical operations that work with the given payload."""
@@ -107,6 +123,7 @@ class ResultKeeper:
             if answer == expected_result:
                 self.points.update_points()
                 self._is_init = False
+                self.steps += 1
                 yield question, True  # Signal success to the UI
                 return answer  # Return for next calculation
             else:
@@ -124,7 +141,6 @@ class ResultKeeper:
         a, b = payload[0], payload[1]
         result = self.calculate(a, b, chars[0])
         answer = yield from self._get_answer(result, self._question(a, b, chars[0]))
-        print(f"Answer  {answer}")
         if answer is None:
             return None
         # Subsequent questions
@@ -136,6 +152,7 @@ class ResultKeeper:
             if answer is None:
                 return None
         self.create_payload([answer])
+        self.finish_round = True
 
     def run(self) -> Generator[tuple[str, bool], int, None]:
         """Run the game, yielding (question, is_correct) tuples and accepting answers"""
@@ -143,12 +160,13 @@ class ResultKeeper:
         self.create_payload()
         while True:
             answer = yield from self.round()
-            if answer is None:
+            if answer is None and not self.finish_round:
                 return None
 
             if all(self.points.answers_status):
                 self.points.answers_status = []
                 self.points.level += 1
                 self.level += 1
+                self.finish_round = False
             else:
                 self.points.answers_status = []

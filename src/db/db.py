@@ -1,8 +1,8 @@
 from sqlalchemy import Engine, create_engine, update
 from sqlalchemy.orm import sessionmaker
 
-from ..models.games import GameLevel, GameName
-from ..models.user import User
+from ..models.games import AssociativeChangingModel, GameName, ResultKeeperModel
+from ..models.user import PointsCategory, PointsModel, User
 from ..user.session import hash_password
 
 DATABASE_URL = "sqlite:///db.sqlite"
@@ -26,7 +26,7 @@ class DBManager:
         self.session.add(record)
         self.session.commit()
 
-    def update_record(self, model, id, fields: dict):
+    def update_record(self, model, id: int, fields: dict):
         stmt = update(model).where(model.id == id).values(**fields)
         self.session.execute(stmt)
         self.session.commit()
@@ -45,10 +45,33 @@ class DBManager:
 
             # Now create game levels with the user's ID
             for game in GameName:
-                self.session.add(GameLevel(user_id=user.id, game_name=game, level=1))
-            self.session.commit()
+                self.init_game(user.id, game)
 
             return self.find_record(User, username=username, id=user.id)
         except:
             self.session.rollback()
             raise
+
+    def add_points_for_game(self, user_id: int, point: int, category: PointsCategory):
+        self.add_record(
+            PointsModel, user_id=user_id, point=point, category=category.value[0]
+        )
+
+    def add_points_for_first_game(self, user_id: int, category: PointsCategory):
+        self.add_record(
+            PointsModel,
+            user_id=user_id,
+            point=category.value[1],
+            category=category.value[0],
+        )
+
+    def init_game(self, user_id, game_name: str):
+        match game_name:
+            case GameName.RESULT_KEEPER:
+                self.add_record(ResultKeeperModel, user_id=user_id, game_name=game_name)
+            case GameName.ASSOCIATIVE_CHANGING:
+                self.add_record(
+                    AssociativeChangingModel, user_id=user_id, game_name=game_name
+                )
+            case _:
+                raise ValueError("Invalid game name. Please implement new case!")

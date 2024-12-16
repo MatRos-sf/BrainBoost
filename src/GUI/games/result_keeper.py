@@ -1,10 +1,14 @@
+from typing import Optional
+
 from kivy.clock import Clock
 from kivy.lang import Builder
 
 from src.db.session import GameManager
 from src.games.math import ResultKeeper
+from src.GUI.messages.messages import message_ends_game
+from src.models.user import PointsCategory
 
-from ...models.games import GameName
+from ...models.games import GameName, ResultKeeperModel, ResultKeeperSessionModel
 from .base_game_screen import BaseGamaScreen
 
 # Load the kv file
@@ -15,7 +19,9 @@ class ResultKeeperScreen(BaseGamaScreen):
     NAME_GAME = GameName.RESULT_KEEPER
     TIME_LEFT = 60
 
-    def __init__(self, session_manager: GameManager, **kwargs):
+    def __init__(
+        self, session_manager: GameManager, init_level: Optional[int] = None, **kwargs
+    ):
         super(ResultKeeperScreen, self).__init__(session_manager, **kwargs)
 
         self.result_keeper = None
@@ -34,14 +40,11 @@ class ResultKeeperScreen(BaseGamaScreen):
 
     def initialize_game_state(self):
         """Initialize or reset the game state"""
-        if not self.session_manager:
-            level = 1
-        else:
-            level = self.session_manager.get_level_game(self.NAME_GAME)
+        self.find_innit_level(PointsCategory.FIRST_RESULT_KEEPER.value[1])
 
-        self.result_keeper = ResultKeeper(level)
+        self.result_keeper = ResultKeeper(self.init_level)
         self.info_label.text = f"{self.result_keeper.lives_left}"
-        self.level_label.text = f"{level}"
+        self.level_label.text = f"{self.init_level}"
 
         self.game = self.result_keeper.run()
         message, _ = next(self.game)
@@ -55,15 +58,12 @@ class ResultKeeperScreen(BaseGamaScreen):
         """Update the countdown display"""
         self.countdown -= 1
         if self.countdown >= 0:
-            if hasattr(self, "countdown_label"):
-                self.countdown_label.text = str(self.countdown)
+            self.countdown_label.text = str(self.countdown)
             return True
         else:
             # Switch layouts
-            if hasattr(self, "countdown_layout"):
-                self.countdown_layout.opacity = 0
-            if hasattr(self, "game_layout"):
-                self.game_layout.opacity = 1
+            self.countdown_layout.opacity = 0
+            self.game_layout.opacity = 1
             # Start the game
             self.start_timer()
             if hasattr(self, "answer_field"):
@@ -98,16 +98,15 @@ class ResultKeeperScreen(BaseGamaScreen):
             return False
         return True
 
-    def game_over(self):
+    def game_over(self, is_end_time: bool = True):
         self.cleanup_clock_events()
-        points = self.result_keeper.points.points
-        level = self.result_keeper.level
+        earned_points = self.result_keeper.points.points
+        level = self.result_keeper.level  # level reached in game
 
-        self.info_label.text = (
-            f"Game Over - Time's up! You earned {points} points at level {level}!"
-        )
+        message_content = message_ends_game(earned_points, level, is_end_time)
+        self.info_label.text = message_content
         self.answer_field.disabled = True
-        self.save_stats(points, level)
+        self.save_stats()
         # Create new UserSession with updated points
         self.show_end_game_buttons()
 
@@ -115,7 +114,7 @@ class ResultKeeperScreen(BaseGamaScreen):
         try:
             message, result = self.game.send(int(answer))
         except StopIteration:
-            self.game_over()
+            self.game_over(is_end_time=False)
             return
 
         self.question_field.text = message
@@ -162,3 +161,43 @@ class ResultKeeperScreen(BaseGamaScreen):
         self.hide_end_game_buttons()
         # Start countdown again
         self.countdown_event = Clock.schedule_interval(self.start_countdown, 1)
+
+    def save_stats(self):
+        """
+        Method updates the record of the table and current stats. In the following steps:
+            1. Add new GameSession
+            2. Update User's points
+            3. If user level up then:
+                a. Update the level field in GameLevel mode
+                b. Update the level in the current session
+            4. Update points in the current session
+        """
+        user_session = self.session_manager.current_session
+        game_stats = self.result_keeper.get_stats()
+        started_level = game_stats.get("started_level")
+        finished_level = game_stats.get("finished_level")
+        earned_point = game_stats.get("points_earned")
+
+        game = user_session.stats.get(self.NAME_GAME.value)
+        # Save session stats
+        self.session_manager.db.add_record(
+            ResultKeeperSessionModel,
+            result_keeper_id=game.id,
+            duration=ResultKeeperScreen.TIME_LEFT - self.time_left,
+            **game_stats,
+        )
+
+        self.session_manager.db.add_points_for_game(
+            user_id=user_session.id,
+            point=earned_point,
+            category=PointsCategory.GAME_RESULT_KEEPER,
+        )
+        if started_level < finished_level:
+            # update level
+            self.session_manager.db.update_record(
+                ResultKeeperModel, game.id, {"level": finished_level}
+            )
+            # update level in current session
+            self.session_manager.update_level_of_game(self.NAME_GAME, finished_level)
+        # update points in current session
+        self.session_manager.update_point(earned_point)

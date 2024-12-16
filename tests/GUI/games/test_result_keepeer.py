@@ -176,7 +176,7 @@ class TestResultKeeperScreen(GraphicUnitTest):
         # Mock the result keeper
         mock_result_keeper = MagicMock()
         mock_result_keeper.level = 1  # Simulate level increase
-        mock_result_keeper.points.points = 10  # Simulate points earned
+        mock_result_keeper.points.point = 10  # Simulate points earned
         self.result_keeper_screen.result_keeper = mock_result_keeper
 
         # Enter a good answer and trigger enter
@@ -213,7 +213,7 @@ class TestResultKeeperScreen(GraphicUnitTest):
         # Mock the result keeper
         mock_result_keeper = MagicMock()
         mock_result_keeper.level = 2  # Simulate level increase
-        mock_result_keeper.points.points = 10  # Simulate points earned
+        mock_result_keeper.points.point = 10  # Simulate points earned
         self.result_keeper_screen.result_keeper = mock_result_keeper
 
         # Enter a good answer and trigger enter

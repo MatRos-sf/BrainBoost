@@ -4,8 +4,6 @@ from kivy.clock import Clock
 
 from src.db.session import GameManager
 from src.GUI.base_screen import BaseScreen
-from src.models.games import GameLevel, GameSession
-from src.models.user import User
 
 
 class BaseGamaScreen(BaseScreen):
@@ -15,6 +13,18 @@ class BaseGamaScreen(BaseScreen):
         self.countdown_event: Optional[Clock] = None
         self.game = None
         self.time = 0
+        self.init_level = None
+
+    def find_innit_level(self, init_points: int):
+        """Finds the current level of the game."""
+        # must be because screen is loaded in the very beginning
+        if not self.session_manager:
+            level = 1
+        else:
+            level = self.session_manager.get_level_game(self.NAME_GAME)
+            if level is None:
+                raise ValueError("Could not find level of game")
+        self.init_level = level
 
     def start_timer(self):
         self.timer_event = Clock.schedule_interval(self.update_timer, 1)
@@ -62,32 +72,8 @@ class BaseGamaScreen(BaseScreen):
     def start_new_game(self):
         pass
 
-    def save_stats(self, earned_points: int, level: int):
+    def save_stats(self, *args, **kwargs):
         """
         This method should be called after the game.
-        Method updates the record of the table and current stats. In the following steps:
-            1. Add new GameSession
-            2. Update User's points
-            3. If user level up then:
-                a. Update the level field in GameLevel mode
-                b. Update the level in the current session
-            4. Update points in the current session
         """
-        user = self.session_manager.current_session
-        payload = {"points": User.points + earned_points}
-        game = user.stats.get(self.NAME_GAME.value)
-        # add new record
-        self.session_manager.db.add_record(
-            GameSession,
-            game_level_id=game.id,
-            started_level=game.level,
-            finished_level=level,
-            points_earned=earned_points,
-        )
-        self.session_manager.db.update_record(User, user.id, payload)
-        if game.level < level:
-            # update level
-            self.session_manager.db.update_record(GameLevel, game.id, {"level": level})
-            self.session_manager.update_level_of_game(self.NAME_GAME, level)
-
-        self.session_manager.update_points(earned_points)
+        raise NotImplementedError

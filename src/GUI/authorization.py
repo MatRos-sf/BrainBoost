@@ -138,9 +138,7 @@ class LoginScreen(BaseScreen):
     def authorization(self, instance):
         username = self.user_field.text.strip()
         password = self.password_field.text
-
         user = self.session_manager.db.find_record(User, username=username)
-
         if user and verify_password(user.password, password):
             self.show_message("Success", "Login successful!")
             self.password_field.text = ""

@@ -1,9 +1,9 @@
 from dataclasses import dataclass
-from typing import Tuple
+from typing import Dict, Optional
 
 from src.exceptions.database_exceptions import UserNotFoundException
 
-from ..models.games import GameLevel, GameName
+from ..models.games import GameName, ResultKeeperModel
 from ..models.user import User
 from .db import DATABASE_URL, DBManager
 
@@ -12,25 +12,15 @@ from .db import DATABASE_URL, DBManager
 class GameStatistic:
     id: int
     game: GameName
-    level: int
+    level: Optional[int]
 
 
 @dataclass
 class UserSession:
     id: int
     username: str
-    points: int
-    stats: Tuple[GameName, GameStatistic]
-
-    @classmethod
-    def parse_data(cls, data):
-        games = {
-            game.game_name.value: GameStatistic(
-                id=game.id, game=game.game_name, level=game.level
-            )
-            for game in data.game_levels
-        }
-        return cls(id=data.id, username=data.username, points=data.points, stats=games)
+    point: int
+    stats: Dict[GameName, GameStatistic]
 
 
 class GameManager:
@@ -54,12 +44,26 @@ class GameManager:
     def current_session(self) -> None:
         self._current_session = None
 
-    def update_points(self, points) -> None:
+    def current_session_validation(self):
+        if not self.current_session:
+            raise ValueError("No current session set")
+
+    def get_level_game(self, game_name: GameName) -> Optional[int]:
+        self.current_session_validation()
+        game_stats = self.current_session.stats.get(game_name.value)
+        return game_stats.level
+
+    def get_id_game(self, game_name: GameName) -> Optional[int]:
+        self.current_session_validation()
+        game_stats = self.current_session.stats.get(game_name.value)
+        return game_stats.id
+
+    def update_point(self, point) -> None:
         """
         Update the current session with the provided attributes.
         When the attribute is not an attribute of UserSession raise a ValueError
         """
-        self.current_session.points += points
+        self.current_session.point += point
 
     def update_level_of_game(self, game_name: GameName, level: int):
         """
@@ -73,19 +77,22 @@ class GameManager:
         game_stats.level = level
         self.current_session.stats[game_name.value] = game_stats
 
-    def _check_games(self, user: User):
+    def _check_games(self, user: User) -> Dict[str, GameStatistic]:
         """
         Method check whether all games are existing in the user session. If some games are not exists then create
         a new record with that game.
         """
-        if len(user.game_levels) < len(GameName):
-            for game in GameName:
-                if len(list(filter(lambda x: x.game == game, user.game_levels))) == 0:
-                    self.db.add_record(
-                        GameLevel, user_id=user.id, game_name=game, level=1
-                    )
-            user = self.db.find_record(User, id=user.id)
-        return user
+        stats = {}
+        for game in GameName:
+            name_game = game.lower().replace(" ", "_")
+            game_stat: Optional[ResultKeeperModel] = getattr(user, name_game)
+            if game_stat:
+                stats[game.value] = GameStatistic(
+                    id=game_stat.id, game=game.value, level=game_stat.level
+                )
+            else:
+                stats[game.value] = GameStatistic(id=None, game=game.value, level=None)
+        return stats
 
     def load_session(self, user_id) -> None:
         """
@@ -95,10 +102,9 @@ class GameManager:
         user = self.db.find_record(User, id=user_id)
         if user:
             # check if all game exists
-            user = self._check_games(user)
+            games = self._check_games(user)
         else:
             raise UserNotFoundException(user_id)
-        self.current_session = UserSession.parse_data(user)
-
-    def get_level_game(self, game_name: GameName):
-        return self.current_session.stats.get(game_name.value).level
+        self.current_session = UserSession(
+            id=user.id, username=user.username, point=user.point, stats=games
+        )
