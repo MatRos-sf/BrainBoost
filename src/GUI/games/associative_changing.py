@@ -125,8 +125,8 @@ class AssociativeChainingScreen(BaseGamaScreen):
         return [f"[color={color}]{text or ''}[/color]" for text, color in colors]
 
     def __finished_message(self):
-        points = self.associative_chaining.points.point
-        return f"\nYou earned {points} points.\nYou have memorized {self.associative_chaining.memorized} nouns and forgotten {self.associative_chaining.forgot} nouns and missed {self.associative_chaining.missed}\n"
+        points = self.associative_chaining.points.points
+        return f"\nYou earned {points} points.\nYou have memorized {self.associative_chaining.points.correct_answers} nouns and forgotten {self.associative_chaining.points.wrong_answer} nouns and missed {self.associative_chaining.skip_answers}\n"
 
     def show_user_answer(self, user_answer: List[Tuple[str, str]]):
         answer = self._merge_colors(user_answer)
@@ -143,7 +143,7 @@ class AssociativeChainingScreen(BaseGamaScreen):
         if self.start_button.text.lower() == "start":
             self.question_label.text = MESSAGE
             self.answer_field.opacity = 1
-            self.time_press_start = (self.time,)
+            self.time_press_start = self.time
             self.start_button.text = "Stop"
         # review answer
         elif self.start_button.text.lower() == "stop":

@@ -79,11 +79,13 @@ class AssociativeChaining:
                 # points for bad or missing answers
                 if user_answer == "-":
                     self.skip_answers += 1
+                elif user_answer is None:
+                    self.points.wrong_answer += 1
                 else:
                     self.points.update_points(is_wrong_answer=True)
                 result.append((user_answer, AssociativeChaining.BAD_ANSWER_COLOR))
         # update level
-        self.user_answers.extend(answers)
+        self.update_level()
 
         return result
 
