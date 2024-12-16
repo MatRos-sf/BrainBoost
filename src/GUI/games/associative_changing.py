@@ -8,6 +8,12 @@ from kivy.lang import Builder
 
 from src.db.session import GameManager
 from src.games.memonics.associative_chaining import AssociativeChaining
+from src.models.games import (
+    AssociativeChangingModel,
+    AssociativeChangingSessionModel,
+    GameName,
+)
+from src.models.user import PointsCategory
 
 from .base_game_screen import BaseGamaScreen
 
@@ -60,10 +66,13 @@ Good luck!
 
 
 class AssociativeChainingScreen(BaseGamaScreen):
+    NAME_GAME = GameName.ASSOCIATIVE_CHANGING
+
     def __init__(self, session_manager: GameManager, **kwargs):
         super(AssociativeChainingScreen, self).__init__(session_manager, **kwargs)
         self.associative_chaining: Optional[AssociativeChaining] = None
         self.timer_label.text = "00:00:00"
+        self.time_press_start: Optional[int] = None
 
     def on_kv_post(self, base_widget):
         self.timer_label.text = "00:00:00"
@@ -74,7 +83,8 @@ class AssociativeChainingScreen(BaseGamaScreen):
         self.start_new_game()
 
     def initialize_game_state(self):
-        self.associative_chaining = AssociativeChaining(1)
+        self.find_innit_level(PointsCategory.FIRST_ASSOCIATIVE_CHANGING.value[1])
+        self.associative_chaining = AssociativeChaining(self.init_level)
         self.game = self.associative_chaining.run()
 
         # capture list to memorise
@@ -133,6 +143,7 @@ class AssociativeChainingScreen(BaseGamaScreen):
         if self.start_button.text.lower() == "start":
             self.question_label.text = MESSAGE
             self.answer_field.opacity = 1
+            self.time_press_start = (self.time,)
             self.start_button.text = "Stop"
         # review answer
         elif self.start_button.text.lower() == "stop":
@@ -143,7 +154,7 @@ class AssociativeChainingScreen(BaseGamaScreen):
             # return to start
             self.start_button.text = "Start"
             self.timer_event.cancel()
-            # time = self.time
+            self.save_stats()
             # hide and opacity start_button
             self.start_button.opacity = 0
             self.start_button.disabled = True
@@ -153,3 +164,35 @@ class AssociativeChainingScreen(BaseGamaScreen):
             raise ValueError(
                 f"Invalid button text: start_game.text = {self.start_game.text}"
             )
+
+    def save_stats(self):
+        user_session = self.session_manager.current_session
+        game_stats = self.associative_chaining.get_stats()
+        started_level = game_stats.get("started_level")
+        finished_level = game_stats.get("finished_level")
+        earned_point = game_stats.get("points_earned")
+
+        game = user_session.stats.get(self.NAME_GAME.value)
+        # Save session stats
+        self.session_manager.db.add_record(
+            AssociativeChangingSessionModel,
+            associative_changing_id=game.id,
+            duration=self.time,
+            memorization_time=self.time_press_start,
+            **game_stats,
+        )
+
+        self.session_manager.db.add_points_for_game(
+            user_id=user_session.id,
+            point=earned_point,
+            category=PointsCategory.GAME_ASSOCIATIVE_CHANGING,
+        )
+        if started_level < finished_level:
+            # update level
+            self.session_manager.db.update_record(
+                AssociativeChangingModel, game.id, {"level": finished_level}
+            )
+            # update level in current session
+            self.session_manager.update_level_of_game(self.NAME_GAME, finished_level)
+        # update points in current session
+        self.session_manager.update_point(earned_point)

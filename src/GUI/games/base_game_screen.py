@@ -17,14 +17,13 @@ class BaseGamaScreen(BaseScreen):
 
     def find_innit_level(self, init_points: int):
         """Finds the current level of the game."""
+        # must be because screen is loaded in the very beginning
         if not self.session_manager:
             level = 1
         else:
             level = self.session_manager.get_level_game(self.NAME_GAME)
             if level is None:
-                level = 1
-                # update session
-                self.session_manager.update_point(init_points)
+                raise ValueError("Could not find level of game")
         self.init_level = level
 
     def start_timer(self):
