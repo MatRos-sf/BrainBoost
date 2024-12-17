@@ -7,7 +7,7 @@ from kivy.clock import Clock
 from kivy.lang import Builder
 
 from src.db.session import GameManager
-from src.games.memonics.associative_chaining import AssociativeChaining
+from src.games.mnemonic.associative_chaining import AssociativeChaining
 from src.models.games import (
     AssociativeChangingModel,
     AssociativeChangingSessionModel,

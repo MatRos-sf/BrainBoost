@@ -6,6 +6,8 @@ from typing import Generator, List, Tuple
 
 from src.games.points import Points
 
+DATA_PATH = Path(__file__).parent.parent / Path("data")
+
 
 class LanguagePrefix(Enum):
     PL = "pl"
@@ -28,7 +30,7 @@ class AssociativeChaining:
         self.level = level
         self.level_start = self.level
         self.data_file = language.value + "_noun"
-        self.path_file = Path(__file__).parent / Path("data") / Path(self.data_file)
+        self.path_file = DATA_PATH / Path(self.data_file)
         self.payload = []
         self.user_answers = []
         self.skip_answers = 0
