@@ -2,9 +2,12 @@ import datetime
 from enum import Enum
 from typing import List, Optional
 
+from sqlalchemy import Enum as SQLEnum
 from sqlalchemy import event
 from sqlalchemy.orm import Session
-from sqlmodel import Field, Relationship
+from sqlmodel import Column, Field, Relationship
+
+from src.models.enum_types import Language
 
 from . import ModelBase
 from .games import ResultKeeperModel
@@ -18,7 +21,9 @@ class User(ModelBase, table=True):
     password: str
     created_at: datetime.datetime = Field(default_factory=datetime.datetime.now)
     logins: List["Login"] = Relationship(back_populates="user")
-
+    language: str = Field(
+        sa_column=Column(SQLEnum(Language), nullable=False, default=Language.EN)
+    )
     # stats
     point: int = Field(default=0)  # sum points
     points: List["PointsModel"] = Relationship(back_populates="user")
