@@ -4,7 +4,7 @@ repos:
     hooks:
     -   id: check-yaml
     -   id: end-of-file-fixer
-        exclude: ^migrations/
+        exclude: ^(migrations/|src/games/data/.*)
     -   id: trailing-whitespace
         exclude: ^(migrations/|src/games/data)
 -   repo: https://github.com/psf/black
