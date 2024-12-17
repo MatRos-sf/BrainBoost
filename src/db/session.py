@@ -3,6 +3,7 @@ from typing import Dict, Optional
 
 from src.exceptions.database_exceptions import UserNotFoundException
 
+from ..models.enum_types import Language
 from ..models.games import GameName, ResultKeeperModel
 from ..models.user import User
 from .db import DATABASE_URL, DBManager
@@ -18,6 +19,7 @@ class GameStatistic:
 @dataclass
 class UserSession:
     id: int
+    language: Language
     username: str
     point: int
     stats: Dict[GameName, GameStatistic]
@@ -106,5 +108,9 @@ class GameManager:
         else:
             raise UserNotFoundException(user_id)
         self.current_session = UserSession(
-            id=user.id, username=user.username, point=user.point, stats=games
+            id=user.id,
+            language=user.language,
+            username=user.username,
+            point=user.point,
+            stats=games,
         )
