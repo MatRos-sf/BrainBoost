@@ -5,13 +5,9 @@ from random import sample
 from typing import Generator, List, Tuple
 
 from src.games.points import Points
+from src.models.enum_types import Language
 
 DATA_PATH = Path(__file__).parent.parent / Path("data")
-
-
-class LanguagePrefix(Enum):
-    PL = "pl"
-    EN = "en"
 
 
 class Color(Enum):
@@ -26,10 +22,11 @@ class AssociativeChaining:
     GOOD_ANSWER_COLOR = Color.YELLOW.value
     START_SIZE = 10
 
-    def __init__(self, level: int, language: LanguagePrefix = LanguagePrefix.PL):
+    def __init__(self, level: int, language: Language):
         self.level = level
         self.level_start = self.level
-        self.data_file = language.value + "_noun"
+        self.language = language
+        self.data_file = self.language.value.lower() + "_noun"
         self.path_file = DATA_PATH / Path(self.data_file)
         self.payload = []
         self.user_answers = []
@@ -53,6 +50,7 @@ class AssociativeChaining:
             "words": " ,".join(self.payload),
             "user_answers": " ,".join(self.user_answers),
             "amt_words": self.size,
+            "language": self.language,
         }
 
     def create_payload(self):

@@ -2,9 +2,11 @@ import datetime
 from enum import StrEnum
 from typing import List, Optional
 
-from sqlmodel import Field, Relationship
+from sqlalchemy import Enum as SQLEnum
+from sqlmodel import Column, Field, Relationship
 
 from . import ModelBase
+from .enum_types import Language
 
 
 class GameName(StrEnum):
@@ -77,3 +79,6 @@ class AssociativeChangingSessionModel(SessionModel, table=True):
     amt_words: int
     skip_answers: int
     memorization_time: int  # when user press start answer
+    language: str = Field(
+        sa_column=Column(SQLEnum(Language), nullable=False, default=Language.EN)
+    )

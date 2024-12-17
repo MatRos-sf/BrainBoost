@@ -84,7 +84,9 @@ class AssociativeChainingScreen(BaseGamaScreen):
 
     def initialize_game_state(self):
         self.find_innit_level(PointsCategory.FIRST_ASSOCIATIVE_CHANGING.value[1])
-        self.associative_chaining = AssociativeChaining(self.init_level)
+        self.associative_chaining = AssociativeChaining(
+            self.init_level, self.session_manager.current_session.language
+        )
         self.game = self.associative_chaining.run()
 
         # capture list to memorise
