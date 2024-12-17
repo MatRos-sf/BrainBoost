@@ -5,9 +5,9 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
 
 from src.db.session import GameManager
-from src.models.user import PointsCategory
+from src.models.enum_types import GameName, PointsCategory
 
-from ..models.games import AssociativeChangingModel, GameName, ResultKeeperModel
+from ..models.games import AssociativeChangingModel, ResultKeeperModel
 from .base_screen import BaseScreen
 
 

@@ -8,12 +8,12 @@ from kivy.lang import Builder
 
 from src.db.session import GameManager
 from src.games.mnemonic.associative_chaining import AssociativeChaining
+from src.models.enum_types import PointsCategory
 from src.models.games import (
     AssociativeChangingModel,
     AssociativeChangingSessionModel,
     GameName,
 )
-from src.models.user import PointsCategory
 
 from .base_game_screen import BaseGamaScreen
 
@@ -84,7 +84,9 @@ class AssociativeChainingScreen(BaseGamaScreen):
 
     def initialize_game_state(self):
         self.find_innit_level(PointsCategory.FIRST_ASSOCIATIVE_CHANGING.value[1])
-        self.associative_chaining = AssociativeChaining(self.init_level)
+        self.associative_chaining = AssociativeChaining(
+            self.init_level, self.session_manager.current_session.language
+        )
         self.game = self.associative_chaining.run()
 
         # capture list to memorise

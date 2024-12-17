@@ -6,9 +6,9 @@ from kivy.lang import Builder
 from src.db.session import GameManager
 from src.games.math import ResultKeeper
 from src.GUI.messages.messages import message_ends_game
-from src.models.user import PointsCategory
+from src.models.enum_types import GameName, PointsCategory
 
-from ...models.games import GameName, ResultKeeperModel, ResultKeeperSessionModel
+from ...models.games import ResultKeeperModel, ResultKeeperSessionModel
 from .base_game_screen import BaseGamaScreen
 
 # Load the kv file
