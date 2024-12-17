@@ -1,17 +1,11 @@
 import datetime
-from enum import StrEnum
 from typing import List, Optional
 
 from sqlalchemy import Enum as SQLEnum
 from sqlmodel import Column, Field, Relationship
 
 from . import ModelBase
-from .enum_types import Language
-
-
-class GameName(StrEnum):
-    RESULT_KEEPER = "Result Keeper"
-    ASSOCIATIVE_CHANGING = "Associative Changing"
+from .enum_types import GameName, Language
 
 
 class GameModel(ModelBase):

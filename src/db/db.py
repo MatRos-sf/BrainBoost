@@ -1,8 +1,10 @@
 from sqlalchemy import Engine, create_engine, update
 from sqlalchemy.orm import sessionmaker
 
-from ..models.games import AssociativeChangingModel, GameName, ResultKeeperModel
-from ..models.user import PointsCategory, PointsModel, User
+from src.models.enum_types import GameName, PointsCategory
+
+from ..models.games import AssociativeChangingModel, ResultKeeperModel
+from ..models.user import PointsModel, User
 from ..user.session import hash_password
 
 DATABASE_URL = "sqlite:///db.sqlite"

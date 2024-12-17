@@ -8,12 +8,12 @@ from kivy.lang import Builder
 
 from src.db.session import GameManager
 from src.games.mnemonic.associative_chaining import AssociativeChaining
+from src.models.enum_types import PointsCategory
 from src.models.games import (
     AssociativeChangingModel,
     AssociativeChangingSessionModel,
     GameName,
 )
-from src.models.user import PointsCategory
 
 from .base_game_screen import BaseGamaScreen
 
