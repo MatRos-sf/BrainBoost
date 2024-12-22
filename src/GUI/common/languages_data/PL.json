@@ -1,0 +1,14 @@
+{
+    "settings": {
+        "labels": {
+            "language_label": "Język",
+            "save_button": "Zapisz",
+            "back_button": "Wróć do menu"
+        },
+        "messages": {
+            "saved_settings": "Ustawienia zapisane",
+            "changed_language": "Język zmieniony"
+        }
+
+      }
+}
