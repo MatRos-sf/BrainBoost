@@ -8,6 +8,7 @@ from .authorization import CreateAccountScreen, LoginScreen
 from .games.associative_changing import AssociativeChainingScreen
 from .games.result_keeper import ResultKeeperScreen
 from .menu import MenuScreen
+from .settings import SettingsScreen
 
 
 class MyApp(App):
@@ -34,6 +35,9 @@ class MyApp(App):
             AssociativeChainingScreen(
                 session_manager=self.session_manager, name="associative_changing_game"
             )
+        )
+        sm.add_widget(
+            SettingsScreen(session_manager=self.session_manager, name="settings")
         )
         sm.current = "login"
         return sm
