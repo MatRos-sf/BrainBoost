@@ -26,7 +26,7 @@ class MenuScreen(BaseScreen):
         # Options
         self.result_keeper = Button(text="Result Keeper", size_hint=(1, 0.3))
         self.option2 = Button(text="AS", size_hint=(1, 0.3))
-        self.option3 = Button(text="Option 3", size_hint=(1, 0.3))
+        self.option3 = Button(text="Settings", size_hint=(1, 0.3))
         self.back_button = Button(text="Logout", size_hint=(1, 0.3))
 
         # Bind button events
@@ -50,6 +50,7 @@ class MenuScreen(BaseScreen):
             )
         )
 
+        self.option3.bind(on_press=self.settingss_screen)
         self.layout.add_widget(self.result_keeper)
         self.layout.add_widget(self.option2)
         self.layout.add_widget(self.option3)
@@ -67,6 +68,9 @@ class MenuScreen(BaseScreen):
     def go_back(self, instance) -> None:
         del self.session_manager.current_session
         self.manager.current = "login"
+
+    def settingss_screen(self, intsnace):
+        self.manager.current = "settings"
 
     def start_game_generic(
         self, points_category, screen_name, game_name, model, instance

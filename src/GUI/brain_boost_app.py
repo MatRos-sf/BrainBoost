@@ -5,9 +5,11 @@ from src.db.session import GameManager
 
 from ..db.db import DATABASE_URL
 from .authorization import CreateAccountScreen, LoginScreen
+from .common.translator import Translator
 from .games.associative_changing import AssociativeChainingScreen
 from .games.result_keeper import ResultKeeperScreen
 from .menu import MenuScreen
+from .settings import SettingsScreen
 
 
 class MyApp(App):
@@ -15,6 +17,7 @@ class MyApp(App):
         super(MyApp, self).__init__(**kwargs)
         # Initialize database
         self.session_manager = GameManager(database_url)
+        self.translator = Translator()
 
     def build(self):
         sm = ScreenManager()
@@ -33,6 +36,13 @@ class MyApp(App):
         sm.add_widget(
             AssociativeChainingScreen(
                 session_manager=self.session_manager, name="associative_changing_game"
+            )
+        )
+        sm.add_widget(
+            SettingsScreen(
+                session_manager=self.session_manager,
+                name="settings",
+                translator=self.translator,
             )
         )
         sm.current = "login"
