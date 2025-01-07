@@ -11,9 +11,8 @@ from .base_screen import BaseScreen
 
 
 class SettingsScreen(BaseScreen):
-    def __init__(self, session_manager: GameManager, translator, **kwargs) -> None:
+    def __init__(self, session_manager: GameManager, **kwargs) -> None:
         super(SettingsScreen, self).__init__(session_manager, **kwargs)
-        self.translator = translator
         # Info layout
         self.info_layout = GridLayout(
             cols=1, size_hint=(0.6, 0.1), pos_hint={"center_x": 0.5, "center_y": 0.9}
@@ -30,7 +29,7 @@ class SettingsScreen(BaseScreen):
         # Language selection section
         self.language_layout = GridLayout(cols=2, size_hint=(1, 0.2))
         self.language_label = Label(
-            text=self.translator.get_labels_text("settings", "language_label"),
+            text=self.translation.get_labels_text("settings", "language_label"),
             size_hint=(0.5, 1),
         )
         self.language_spinner = Spinner(
@@ -52,11 +51,11 @@ class SettingsScreen(BaseScreen):
         # Save and Back to Menu buttons
         self.buttons_layout = GridLayout(cols=2, size_hint=(1, 0.2))
         self.save_button = Button(
-            text=self.translator.get_labels_text("settings", "save_button"),
+            text=self.translation.get_labels_text("settings", "save_button"),
             size_hint=(0.5, 1),
         )
         self.back_button = Button(
-            text=self.translator.get_labels_text("settings", "back_button"),
+            text=self.translation.get_labels_text("settings", "back_button"),
             size_hint=(0.5, 1),
         )
 
@@ -74,18 +73,29 @@ class SettingsScreen(BaseScreen):
         super().on_enter(*args)
         self.language_spinner.text = self.session_manager.get_language()
         self.set_label_text(
-            **self.translator.translations.get("settings").get("labels")
+            **self.translation.translations.get("settings").get("labels")
         )
 
     # Button events
     def back_to_menu(self, instance):
         """Return to the main menu."""
+        # clear the message
+        self.info_label.text = ""
+        # Go back to the menu screen
         self.manager.current = "menu"
 
     def save_settings(self, instance):
+        """
+        Saves user settings if any changes are detected.
+
+        This method checks if the user's language settings has been changed.
+        If a change is detected, it performs the following actions:
+            - Update user's language in the database.
+            - Update current language in the translation.
+            - Update labels.
+            - Show success message.
+        """
         message = ""
-        self.info_label.text = "Settings saved."
-        # TODO: implemented body
         if self.language_spinner.text != self.session_manager.get_language():
             self.session_manager.current_session.language = Language(
                 self.language_spinner.text
@@ -95,16 +105,17 @@ class SettingsScreen(BaseScreen):
                 self.session_manager.current_session.id,
                 {"language": self.language_spinner.text},
             )
-            self.translator.current_language = self.language_spinner.text
-            self.translator.load_language()
+            self.translation.current_language = self.language_spinner.text
             self.set_label_text(
-                **self.translator.translations.get("settings").get("labels")
+                **self.translation.translations.get("settings").get("labels")
             )
-            message += self.translator.get_messages_text("settings", "changed_language")
+            message += self.translation.get_messages_text(
+                "settings", "changed_language"
+            )
 
         if message:
             self.info_label.text = (
-                self.translator.get_messages_text("settings", "saved_settings")
+                self.translation.get_messages_text("settings", "saved_settings")
                 + "\n"
                 + message
             )
