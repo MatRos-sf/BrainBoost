@@ -43,13 +43,12 @@ class MessagePopup(Popup):
 
 
 class LoginScreen(BaseScreen):
-    def __init__(self, session_manager: GameManager, **kwargs):
-        super(LoginScreen, self).__init__(session_manager, **kwargs)
+    def __init__(self, session_manager: GameManager, translation, **kwargs):
+        super(LoginScreen, self).__init__(session_manager, translation, **kwargs)
         self._popup = []  # List to store active popups
 
         # Initialize widgets
         self.info_label = Label(
-            text="Login",
             font_size=18,
             size_hint=(1, 0.15),
             halign="center",
@@ -70,17 +69,16 @@ class LoginScreen(BaseScreen):
         )
         self.remember_me = CheckBox(active=False, size_hint=(0.2, 1))
         self.login_button = Button(
-            text="Login",
             size_hint=(1, 0.25),
             bold=True,
             background_color=(0.2, 0.8, 0.2, 1),
         )
         self.create_button = Button(
-            text="Create account",
             size_hint=(1, 0.25),
             bold=True,
             background_color=(0.2, 0.2, 0.8, 1),
         )
+        self.remember_label = Label(size_hint=(0.8, 1))
 
         # Bind button events
         self.login_button.bind(on_press=self.authorization)
@@ -91,6 +89,10 @@ class LoginScreen(BaseScreen):
 
         # Load saved credentials
         self.load_credentials()
+
+    def on_enter(self, *args):
+        super().on_enter(*args)
+        self.set_label_text(**self.translation.translations.get("login").get("labels"))
 
     def setup_layout(self):
         """Setup the screen layout with all widgets"""
@@ -113,8 +115,7 @@ class LoginScreen(BaseScreen):
 
         # Remember me layout
         remember_layout = BoxLayout(orientation="horizontal", size_hint=(1, 0.15))
-        remember_label = Label(text="Remember Me", size_hint=(0.8, 1))
-        remember_layout.add_widget(remember_label)
+        remember_layout.add_widget(self.remember_label)
         remember_layout.add_widget(self.remember_me)
         self.layout.add_widget(remember_layout)
 
@@ -140,7 +141,12 @@ class LoginScreen(BaseScreen):
         password = self.password_field.text
         user = self.session_manager.db.find_record(User, username=username)
         if user and verify_password(user.password, password):
-            self.show_message("Success", "Login successful!")
+            self.show_message(
+                title=self.get_message_with_variables("login", "success_login_title"),
+                message=self.get_message_with_variables(
+                    "login", "success_login_message"
+                ),
+            )
             self.password_field.text = ""
             self.user_field.text = ""
 
@@ -155,7 +161,8 @@ class LoginScreen(BaseScreen):
             self.manager.current = "menu"
         else:
             self.show_message(
-                "Error", "Login failed! Please check your username and password."
+                title=self.get_message_with_variables("login", "fail_login_title"),
+                message=self.get_message_with_variables("login", "fail_login_message"),
             )
 
     def save_credentials(self, username, password):
@@ -195,15 +202,17 @@ class LoginScreen(BaseScreen):
 
 
 class CreateAccountScreen(BaseScreen):
-    def __init__(self, session_manager: GameManager, **kwargs) -> None:
-        super(CreateAccountScreen, self).__init__(session_manager, **kwargs)
+    def __init__(self, session_manager: GameManager, translation, **kwargs) -> None:
+        super(CreateAccountScreen, self).__init__(
+            session_manager, translation, **kwargs
+        )
         self.layout = GridLayout()
         self.layout.cols = 1
         self.layout.size_hint = (0.6, 0.7)
         self.layout.pos_hint = {"center_x": 0.5, "center_y": 0.5}
 
         # info label
-        self.info_label = Label(text="Create account", font_size=18, color="#00FFCF")
+        self.info_label = Label(font_size=18, color="#00FFCF")
         self.layout.add_widget(self.info_label)
 
         # user field
@@ -234,7 +243,6 @@ class CreateAccountScreen(BaseScreen):
 
         # create button
         self.create_button = Button(
-            text="Create account",
             size_hint=(1, 0.25),
             bold=True,
             background_color="#FFFF00",
@@ -245,13 +253,23 @@ class CreateAccountScreen(BaseScreen):
         # Add the layout only once
         self.add_widget(self.layout)
 
+    def on_enter(self, *args):
+        super().on_enter(*args)
+        self.set_label_text(
+            **self.translation.translations.get("create_account").get("labels")
+        )
+
     def validation_password(self, password_one, password_two):
         if password_one != password_two:
-            self.info_label.text = "Passwords do not match!"
+            self.info_label.text = self.get_message_with_variables(
+                "create_account", "password_not_match"
+            )
             return False
 
         if len(password_one) <= 5:
-            self.info_label.text = "Password must be longer than 5 characters!"
+            self.info_label.text = self.get_message_with_variables(
+                "create_account", "short_password"
+            )
             return False
         return True
 
@@ -259,11 +277,15 @@ class CreateAccountScreen(BaseScreen):
         # Validate input
         username = self.user_field.text.strip()
         if not username:
-            self.info_label.text = "Username cannot be empty!"
+            self.info_label.text = self.get_message_with_variables(
+                "create_account", "empty_user"
+            )
             return
         # Check if username exists
         elif self.session_manager.db.find_record(User, username=username):
-            self.info_label.text = "Username already exists!"
+            self.info_label.text = self.get_message_with_variables(
+                "create_account", "user_exists"
+            )
             return
 
         password_one = self.password_field_one.text
@@ -275,7 +297,9 @@ class CreateAccountScreen(BaseScreen):
         # Create a new user with game levels
         self.session_manager.db.create_account(username, password_one)
 
-        self.info_label.text = "Account created successfully!"
+        self.info_label.text = self.get_message_with_variables(
+            "create_account", "account_created"
+        )
         self.manager.current = "login"
 
     def on_user_field_enter(self, instance) -> None:

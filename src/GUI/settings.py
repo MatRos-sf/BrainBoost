@@ -11,8 +11,8 @@ from .base_screen import BaseScreen
 
 
 class SettingsScreen(BaseScreen):
-    def __init__(self, session_manager: GameManager, **kwargs) -> None:
-        super(SettingsScreen, self).__init__(session_manager, **kwargs)
+    def __init__(self, session_manager: GameManager, translation, **kwargs) -> None:
+        super(SettingsScreen, self).__init__(session_manager, translation, **kwargs)
         # Info layout
         self.info_layout = GridLayout(
             cols=1, size_hint=(0.6, 0.1), pos_hint={"center_x": 0.5, "center_y": 0.9}
