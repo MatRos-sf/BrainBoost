@@ -12,8 +12,8 @@ from .base_screen import BaseScreen
 
 
 class MenuScreen(BaseScreen):
-    def __init__(self, session_manager: GameManager, **kwargs) -> None:
-        super(MenuScreen, self).__init__(session_manager, **kwargs)
+    def __init__(self, session_manager: GameManager, translation, **kwargs) -> None:
+        super(MenuScreen, self).__init__(session_manager, translation, **kwargs)
         # layouts
         self.layout = GridLayout(
             cols=1, size_hint=(0.6, 0.7), pos_hint={"center_x": 0.5, "center_y": 0.5}
@@ -26,11 +26,11 @@ class MenuScreen(BaseScreen):
         # Options
         self.result_keeper = Button(text="Result Keeper", size_hint=(1, 0.3))
         self.option2 = Button(text="AS", size_hint=(1, 0.3))
-        self.option3 = Button(text="Settings", size_hint=(1, 0.3))
-        self.back_button = Button(text="Logout", size_hint=(1, 0.3))
+        self.settings_button = Button(text="Settings", size_hint=(1, 0.3))
+        self.logout_button = Button(text="Logout", size_hint=(1, 0.3))
 
         # Bind button events
-        self.back_button.bind(on_press=self.go_back)
+        self.logout_button.bind(on_press=self.go_back)
         self.result_keeper.bind(
             on_press=partial(
                 self.start_game_generic,
@@ -50,20 +50,23 @@ class MenuScreen(BaseScreen):
             )
         )
 
-        self.option3.bind(on_press=self.settingss_screen)
+        self.settings_button.bind(on_press=self.settingss_screen)
         self.layout.add_widget(self.result_keeper)
         self.layout.add_widget(self.option2)
-        self.layout.add_widget(self.option3)
-        self.layout.add_widget(self.back_button)
+        self.layout.add_widget(self.settings_button)
+        self.layout.add_widget(self.logout_button)
 
         self.add_widget(self.layout)
 
     def on_enter(self) -> None:
         # Update user_session when screen is entered
+        print("Here!!!")
+        # TODO: update_text_button
         points = self.session_manager.current_session.point
         username = self.session_manager.current_session.username
         self.user_info.text = f"Welcome {username}!\nPoints: {points}"
-        print(self.session_manager.current_session)
+        print(self.translation.translations.get("menu").get("labels"))
+        self.set_label_text(**self.translation.translations.get("menu").get("labels"))
 
     def go_back(self, instance) -> None:
         del self.session_manager.current_session
