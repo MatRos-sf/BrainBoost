@@ -91,8 +91,7 @@ class LoginScreen(BaseScreen):
         self.load_credentials()
 
     def on_enter(self, *args):
-        super().on_enter(*args)
-        self.set_label_text(**self.translation.translations.get("login").get("labels"))
+        super().on_enter(name_screen="login", *args)
 
     def setup_layout(self):
         """Setup the screen layout with all widgets"""
@@ -254,10 +253,7 @@ class CreateAccountScreen(BaseScreen):
         self.add_widget(self.layout)
 
     def on_enter(self, *args):
-        super().on_enter(*args)
-        self.set_label_text(
-            **self.translation.translations.get("create_account").get("labels")
-        )
+        super(CreateAccountScreen, self).on_enter(name_screen="create_account", *args)
 
     def validation_password(self, password_one, password_two):
         if password_one != password_two:

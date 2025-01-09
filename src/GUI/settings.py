@@ -70,11 +70,8 @@ class SettingsScreen(BaseScreen):
         self.add_widget(self.layout)
 
     def on_enter(self, *args):
-        super().on_enter(*args)
+        super().on_enter(name_screen="settings", *args)
         self.language_spinner.text = self.session_manager.get_language()
-        self.set_label_text(
-            **self.translation.translations.get("settings").get("labels")
-        )
 
     # Button events
     def back_to_menu(self, instance):
@@ -109,13 +106,11 @@ class SettingsScreen(BaseScreen):
             self.set_label_text(
                 **self.translation.translations.get("settings").get("labels")
             )
-            message += self.translation.get_messages_text(
-                "settings", "changed_language"
-            )
+            message += self.get_message_with_variables("settings", "changed_language")
 
         if message:
             self.info_label.text = (
-                self.translation.get_messages_text("settings", "saved_settings")
+                self.get_message_with_variables("settings", "saved_settings")
                 + "\n"
                 + message
             )

@@ -62,16 +62,14 @@ class MenuScreen(BaseScreen):
         """
         Before entering screen:
             * update welcome message
-            * update buttons text
         """
+        super(MenuScreen, self).on_enter(name_screen="menu")
         # Update welcome message
         points = self.session_manager.current_session.point
         username = self.session_manager.current_session.username
         self.welcome_message.text = self.get_message_with_variables(
             "menu", "user_info", points=points, username=username
         )  # f"Welcome {username}!\nPoints: {points}"
-        # set text button
-        self.set_label_text(**self.translation.translations.get("menu").get("labels"))
 
     def go_back(self, instance) -> None:
         del self.session_manager.current_session
