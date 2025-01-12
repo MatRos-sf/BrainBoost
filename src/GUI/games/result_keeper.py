@@ -5,7 +5,6 @@ from kivy.lang import Builder
 
 from src.db.session import GameManager
 from src.games.math import ResultKeeper
-from src.GUI.messages.messages import message_ends_game
 from src.models.enum_types import GameName, PointsCategory
 
 from ...models.games import ResultKeeperModel, ResultKeeperSessionModel
@@ -16,35 +15,63 @@ Builder.load_file("src/GUI/games/result_keeper.kv")
 
 
 class ResultKeeperScreen(BaseGamaScreen):
+    NAME_SCREEN = "result_keeper_game"
     NAME_GAME = GameName.RESULT_KEEPER
     TIME_LEFT = 60
 
     def __init__(
-        self, session_manager: GameManager, init_level: Optional[int] = None, **kwargs
+        self,
+        session_manager: GameManager,
+        translation,
+        init_level: Optional[int] = None,
+        **kwargs,
     ):
-        super(ResultKeeperScreen, self).__init__(session_manager, **kwargs)
-
+        super(ResultKeeperScreen, self).__init__(session_manager, translation, **kwargs)
+        print(
+            f"I'm here---------------------------------------------{self.translation}"
+        )
         self.result_keeper = None
         self.time_left = ResultKeeperScreen.TIME_LEFT  # 60 seconds for the game
         self.countdown = 3
 
-    def on_kv_post(self, base_widget):
-        """Called after kv file is loaded and all widgets are created"""
-        # Initialize UI state
+    def on_enter(self, *args):
+        """Called when the screen is entered"""
+        # Start new game
+        self.start_new_game()
+
         self.answer_field.disabled = False
         self.answer_field.text = ""
-        self.timer_label.text = "Time left: 60s"
-        self.countdown_label.text = "3"
+        self.timer_label.text = self.get_label_with_variables(
+            self.NAME_SCREEN, "timer_label", time=self.TIME_LEFT
+        )
+        self.countdown_label.text = self.get_label_with_variables(
+            self.NAME_SCREEN, "countdown_label", time="3"
+        )
         self.game_layout.opacity = 0
         self.countdown_layout.opacity = 1
+
+    # TODO: it will be remove in the next release
+    # def on_kv_post(self, base_widget):
+    #     """Called after kv file is loaded and all widgets are created"""
+    #     # Initialize UI state
+    #     self.answer_field.disabled = False
+    #     self.answer_field.text = ""
+    #     self.timer_label.text = "Time left: 60s"
+    #     self.countdown_label.text = "3"
+    #     self.game_layout.opacity = 0
+    #     self.countdown_layout.opacity = 1
 
     def initialize_game_state(self):
         """Initialize or reset the game state"""
         self.find_innit_level(PointsCategory.FIRST_RESULT_KEEPER.value[1])
 
         self.result_keeper = ResultKeeper(self.init_level)
-        self.info_label.text = f"{self.result_keeper.lives_left}"
-        self.level_label.text = f"{self.init_level}"
+        self.info_label.text = self.get_label_with_variables(
+            self.NAME_SCREEN, "info_label", lives=self.result_keeper.lives_left
+        )
+        self.level_label.text = self.get_label_with_variables(
+            self.NAME_SCREEN, "level_label", level=self.init_level
+        )
 
         self.game = self.result_keeper.run()
         message, _ = next(self.game)
@@ -79,7 +106,9 @@ class ResultKeeperScreen(BaseGamaScreen):
         """Update timer every second"""
         if self.time_left > 0:
             self.time_left -= 1
-            self.timer_label.text = f"Time left: {self.time_left}s"
+            self.timer_label.text = self.get_label_with_variables(
+                self.NAME_SCREEN, "timer_label", time=self.time_left
+            )
 
         if self.time_left <= 0:
             self.game_over()
@@ -93,22 +122,21 @@ class ResultKeeperScreen(BaseGamaScreen):
         except ValueError:
             self.answer_field.text = ""
 
-            self.info_label.text = "Answer must be a number!"
+            self.info_label.text = self.get_message_with_variables(
+                self.NAME_SCREEN, "invalid_input"
+            )
+
             Clock.schedule_once(lambda dt: setattr(self.answer_field, "focus", True), 0)
             return False
         return True
 
     def game_over(self, is_end_time: bool = True):
         self.cleanup_clock_events()
-        earned_points = self.result_keeper.points.points
-        level = self.result_keeper.level  # level reached in game
-
-        message_content = message_ends_game(earned_points, level, is_end_time)
-        self.info_label.text = message_content
+        self.info_label.text = self.generate_ending_message(is_end_time)
         self.answer_field.disabled = True
         self.save_stats()
         # Create new UserSession with updated points
-        self.show_end_game_buttons()
+        self.show_end_game_buttons(ResultKeeperScreen.NAME_SCREEN)
 
     def trigger_game(self, answer):
         try:
@@ -116,12 +144,12 @@ class ResultKeeperScreen(BaseGamaScreen):
         except StopIteration:
             self.game_over(is_end_time=False)
             return
-
         self.question_field.text = message
 
         if result:
             # If correct, get the next question
             message, _ = next(self.game)
+            # TODO: here
             self.set_label_text(
                 question_field=message,
                 level_label=f"Level: {self.result_keeper.level}",
@@ -140,11 +168,6 @@ class ResultKeeperScreen(BaseGamaScreen):
             return
         self.trigger_game(answer)
 
-    def on_enter(self):
-        """Called when the screen is entered"""
-        # Start new game
-        self.start_new_game()
-
     def start_new_game(self):
         """Start a new game with countdown"""
         self.cleanup_clock_events()
@@ -155,7 +178,11 @@ class ResultKeeperScreen(BaseGamaScreen):
         self.game_layout.opacity = 0
         self.countdown_layout.opacity = 1
         self.set_label_text(
-            answer_field="", timer_label="Time left: 60s", countdown_label="3"
+            answer_field="",
+            timer_label=self.get_label_with_variables(
+                self.NAME_SCREEN, "timer_label", time=self.TIME_LEFT
+            ),
+            countdown_label="3",
         )
         # Hide end game buttons
         self.hide_end_game_buttons()
@@ -201,3 +228,18 @@ class ResultKeeperScreen(BaseGamaScreen):
             self.session_manager.update_level_of_game(self.NAME_GAME, finished_level)
         # update points in current session
         self.session_manager.update_point(earned_point)
+
+    def generate_ending_message(self, is_time_over):
+        """Generate the ending message based on the game outcome"""
+        message = ""
+        if is_time_over:
+            message += self.get_message_with_variables("result_keeper_game", "time_up")
+        else:
+            message += self.get_message_with_variables("result_keeper_game", "defeated")
+        message += self.get_message_with_variables(
+            "result_keeper_game",
+            "stats_message",
+            points=self.result_keeper.points.points,
+            level=self.result_keeper.level,
+        )
+        return message
