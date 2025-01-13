@@ -23,8 +23,6 @@ class BaseScreen(Screen):
             )
 
     def set_label_text(self, **kwargs):
-        print("HEHEHEHEHEHEHEHHEHEHEHEHE")
-        print(kwargs)
         for key, value in kwargs.items():
             attr = getattr(self, key)
             setattr(attr, "text", value)

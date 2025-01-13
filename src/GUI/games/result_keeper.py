@@ -149,7 +149,6 @@ class ResultKeeperScreen(BaseGamaScreen):
         if result:
             # If correct, get the next question
             message, _ = next(self.game)
-            # TODO: here
             self.set_label_text(
                 question_field=message,
                 level_label=f"Level: {self.result_keeper.level}",
