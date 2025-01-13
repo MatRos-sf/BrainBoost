@@ -10,5 +10,77 @@
             "changed_language": "Język zmieniony"
         }
 
+      },
+    "menu": {
+        "labels": {
+            "settings_button": "Ustawienia",
+            "logout_button": "Wyloguj się",
+            "as_button": "ŁMS",
+            "result_keeper_button": "Liczenie W Pamięci"
+        },
+        "messages": {
+            "user_info": "Witaj {username}!\nPunkty: {points}"
+        }
+      },
+    "login": {
+        "labels": {
+            "info_label": "Zaloguj się",
+            "login_button": "Zaloguj się",
+            "create_button": "Utwórz Konto",
+            "remember_label": "Zapamiętaj mnie"
+
+        },
+        "messages": {
+            "success_login_title": "Sukces",
+            "success_login_message": "Logowanie powiodło się!",
+            "fail_login_title": "Błąd logowania",
+            "fail_login_message": "Błąd logowania! Podaj poprawny login lub hasło."
+        }
+      },
+    "create_account": {
+        "labels": {
+            "info_label": "Utwórz konto",
+            "create_button": "Stwórz"
+        },
+        "messages": {
+            "password_not_match": "Hasło musi być takie same!",
+            "short_password": "Hasło musi mieć wiecej niż 5 znaków!",
+            "empty_user": "Nazwa użytkownika nie może być pusta!",
+            "user_exists": "Użytkownik istnieje!",
+            "account_created": "Utworzono nowe konto!"
+        }
+      },
+    "result_keeper_game": {
+        "labels": {
+            "timer_label": "Czas: {time}s",
+            "countdown_label": "{time}",
+            "info_label": "{lives}",
+            "level_label": "{level}",
+            "try_again_button": "Spróbuj ponownie",
+            "back_to_menu_button": "Powrót do menu"
+        },
+        "messages": {
+            "invalid_input": "Odpowiedź musi być liczbą!",
+            "time_up": "Koniec Gry - Czas dobiegł końca!\n",
+            "defeated": "Koniec Gry - Straciłeś wszystkie życia.\n",
+            "stats_message": "Uzyskałeś {points} punktów i poziom {level}!\n"
+        }
+      },
+    "associative_changing_game": {
+        "labels": {
+            "info_label": "Czas ucieka, pośpiesz się! Zapamiętaj podane rzeczowniki, a następnie kliknij przycisk Start.",
+            "timer_label": "",
+            "question_label": "",
+            "start_button": "Start",
+            "try_again_button": "Spróbuj ponownie",
+            "back_to_menu_button": "Powrót do menu"
+        },
+        "messages": {
+            "stats_message": "\nZdobyłeś {points} punktów.\nZapamiętałeś {correct_answers} rzeczowników, zapomniałeś {wrong_answers} rzeczowników, a pominąłeś {skip_answers}\n",
+            "info_answer_one": "\nLista rzeczowników:\n",
+            "message_start": "Czas ucieka, pośpiesz się! Zapamiętaj podane rzeczowniki, a następnie kliknij przycisk Start.",
+            "message_answer": "Proszę wprowadź listę zapamiętanych rzeczowników, oddzielając je przecinkami.\nJeśli nie znasz jakiegoś rzeczownika, możesz wpisać `-`.\nNa przykład, jeśli masz zapamiętać: pies, kot, wiatrak, ale pamiętasz tylko pies i wiatrak, możesz wpisać: `pies, -, wiatrak`, aby zdobyć 4 punkty, ale jeśli wpiszesz: `pies, kot`, zdobędziesz 2 punkty.\nPowodzenia!"
+        }
+
       }
 }

@@ -9,5 +9,75 @@
             "saved_settings": "Settings saved",
             "changed_language": "Language has been changed."
         }
+      },
+    "menu": {
+        "labels": {
+            "settings_button": "Settings",
+            "logout_button": "Logout",
+            "as_button": "AS",
+            "result_keeper_button": "Result Keeper"
+        },
+        "messages": {
+            "user_info": "Welcome {username}!\nPoints: {points}"
+        }
+      },
+    "login": {
+        "labels": {
+            "info_label": "Login",
+            "login_button": "Login",
+            "create_button": "Create account",
+            "remember_label": "Remember me"
+        },
+        "messages": {
+            "success_login_title": "Success",
+            "success_login_message": "Login successful!",
+            "fail_login_title": "Error",
+            "fail_login_message": "Login failed! Please check your username and password."
+        }
+      },
+    "create_account": {
+        "labels": {
+            "info_label": "Create account",
+            "create_button": "Create account"
+        },
+        "messages": {
+            "password_not_match": "Passwords do not match!",
+            "short_password": "Password must be longer than 5 characters!",
+            "empty_user": "Username cannot be empty!",
+            "user_exists": "Username already exists!",
+            "account_created": "Account created successfully!"
+        }
+      },
+    "result_keeper_game": {
+        "labels": {
+            "timer_label": "Time left: {time}s",
+            "countdown_label": "{time}",
+            "info_label": "{lives}",
+            "level_label": "{level}",
+            "try_again_button": "Try Again",
+            "back_to_menu_button": "Back to Menu"
+        },
+        "messages": {
+            "invalid_input": "Answer must be a number!",
+            "time_up": "Game Over - Time's up!\n",
+            "defeated": "Game Over - You have been defeated.\n",
+            "stats_message": "You earned {points} points at level {level}!\n"
+        }
+      },
+    "associative_changing_game": {
+        "labels": {
+            "info_label": "The clock is ticking, hurry up! Remember the given nouns and then clisk Start button.",
+            "timer_label": "",
+            "question_label": "",
+            "start_button": "Start",
+            "try_again_button": "Try Again",
+            "back_to_menu_button": "Back to Menu"
+        },
+        "messages": {
+            "stats_message": "\nYou earned {points} points.\nYou have memorized {correct_answers} nouns and forgotten {wrong_answers} nouns and missed {skip_answers}\n",
+            "info_answer_one":  "\n List on nouns: \n",
+            "message_start": "The clock is ticking, hurry up! Remember the given nouns and then clisk Start button.",
+            "message_answer": "Please enter a list of remembered nouns separated by commas. \nIf you don't know a noun, you can enter `-`.\nFor example, to recall dog, cat, fan, if you remember only dog and fan, you can enter: `dog, -, fan` to earn 4 points but if you enter: 'dog, cat' you earn 2 points.\nGood luck!"
+        }
       }
 }
