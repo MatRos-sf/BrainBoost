@@ -12,26 +12,26 @@ from .base_screen import BaseScreen
 
 
 class MenuScreen(BaseScreen):
-    def __init__(self, session_manager: GameManager, **kwargs) -> None:
-        super(MenuScreen, self).__init__(session_manager, **kwargs)
+    def __init__(self, session_manager: GameManager, translation, **kwargs) -> None:
+        super(MenuScreen, self).__init__(session_manager, translation, **kwargs)
         # layouts
         self.layout = GridLayout(
             cols=1, size_hint=(0.6, 0.7), pos_hint={"center_x": 0.5, "center_y": 0.5}
         )
 
         # User info section
-        self.user_info = Label(text="", size_hint=(1, 0.3))
-        self.layout.add_widget(self.user_info)
+        self.welcome_message = Label(text="", size_hint=(1, 0.3))
+        self.layout.add_widget(self.welcome_message)
 
         # Options
-        self.result_keeper = Button(text="Result Keeper", size_hint=(1, 0.3))
-        self.option2 = Button(text="AS", size_hint=(1, 0.3))
-        self.option3 = Button(text="Option 3", size_hint=(1, 0.3))
-        self.back_button = Button(text="Logout", size_hint=(1, 0.3))
+        self.result_keeper_button = Button(size_hint=(1, 0.3))
+        self.as_button = Button(size_hint=(1, 0.3))
+        self.settings_button = Button(size_hint=(1, 0.3))
+        self.logout_button = Button(size_hint=(1, 0.3))
 
         # Bind button events
-        self.back_button.bind(on_press=self.go_back)
-        self.result_keeper.bind(
+        self.logout_button.bind(on_press=self.go_back)
+        self.result_keeper_button.bind(
             on_press=partial(
                 self.start_game_generic,
                 PointsCategory.FIRST_RESULT_KEEPER,
@@ -40,7 +40,7 @@ class MenuScreen(BaseScreen):
                 ResultKeeperModel,
             )
         )
-        self.option2.bind(
+        self.as_button.bind(
             on_press=partial(
                 self.start_game_generic,
                 PointsCategory.FIRST_ASSOCIATIVE_CHANGING,
@@ -50,23 +50,33 @@ class MenuScreen(BaseScreen):
             )
         )
 
-        self.layout.add_widget(self.result_keeper)
-        self.layout.add_widget(self.option2)
-        self.layout.add_widget(self.option3)
-        self.layout.add_widget(self.back_button)
+        self.settings_button.bind(on_press=self.settings_screen)
+        self.layout.add_widget(self.result_keeper_button)
+        self.layout.add_widget(self.as_button)
+        self.layout.add_widget(self.settings_button)
+        self.layout.add_widget(self.logout_button)
 
         self.add_widget(self.layout)
 
     def on_enter(self) -> None:
-        # Update user_session when screen is entered
+        """
+        Before entering screen:
+            * update welcome message
+        """
+        super(MenuScreen, self).on_enter(name_screen="menu")
+        # Update welcome message
         points = self.session_manager.current_session.point
         username = self.session_manager.current_session.username
-        self.user_info.text = f"Welcome {username}!\nPoints: {points}"
-        print(self.session_manager.current_session)
+        self.welcome_message.text = self.get_message_with_variables(
+            "menu", "user_info", points=points, username=username
+        )  # f"Welcome {username}!\nPoints: {points}"
 
     def go_back(self, instance) -> None:
         del self.session_manager.current_session
         self.manager.current = "login"
+
+    def settings_screen(self, intsnace):
+        self.manager.current = "settings"
 
     def start_game_generic(
         self, points_category, screen_name, game_name, model, instance

@@ -58,18 +58,14 @@ def convert_seconds_to_time(seconds: int):
     return str(datetime.timedelta(seconds=seconds))
 
 
-MESSAGE = """
-Please enter a list of remembered nouns separated by commas. If you don't know a noun, you can enter `-`.
-For example, to recall dog, cat, fan, if you remember only dog and fan, you can enter: `dog, -, fan` to earn 4 points but if you enter: 'dog, cat' you earn 2 points.
-Good luck!
-"""
-
-
 class AssociativeChainingScreen(BaseGamaScreen):
+    NAME_SCREEN = "associative_changing_game"
     NAME_GAME = GameName.ASSOCIATIVE_CHANGING
 
-    def __init__(self, session_manager: GameManager, **kwargs):
-        super(AssociativeChainingScreen, self).__init__(session_manager, **kwargs)
+    def __init__(self, session_manager: GameManager, translation, **kwargs):
+        super(AssociativeChainingScreen, self).__init__(
+            session_manager, translation, **kwargs
+        )
         self.associative_chaining: Optional[AssociativeChaining] = None
         self.timer_label.text = "00:00:00"
         self.time_press_start: Optional[int] = None
@@ -77,8 +73,11 @@ class AssociativeChainingScreen(BaseGamaScreen):
     def on_kv_post(self, base_widget):
         self.timer_label.text = "00:00:00"
 
-    def on_enter(self):
+    def on_enter(self, *args):
         """Called when the screen is entered"""
+        self.set_label_text(
+            **self.translation.translations.get(self.NAME_SCREEN).get("labels")
+        )
         # Start new game
         self.start_new_game()
 
@@ -127,8 +126,14 @@ class AssociativeChainingScreen(BaseGamaScreen):
         return [f"[color={color}]{text or ''}[/color]" for text, color in colors]
 
     def __finished_message(self):
-        points = self.associative_chaining.points.points
-        return f"\nYou earned {points} points.\nYou have memorized {self.associative_chaining.points.correct_answers} nouns and forgotten {self.associative_chaining.points.wrong_answer} nouns and missed {self.associative_chaining.skip_answers}\n"
+        return self.get_message_with_variables(
+            self.NAME_SCREEN,
+            "stats_message",
+            points=self.associative_chaining.points.points,
+            correct_answers=self.associative_chaining.points.correct_answers,
+            wrong_answers=self.associative_chaining.points.wrong_answer,
+            skip_answers=self.associative_chaining.skip_answers,
+        )
 
     def show_user_answer(self, user_answer: List[Tuple[str, str]]):
         answer = self._merge_colors(user_answer)
@@ -136,17 +141,20 @@ class AssociativeChainingScreen(BaseGamaScreen):
         self.question_label.text = (
             message
             + pretty_print(answer)
-            + "\n List on nouns: \n"
+            + self.get_message_with_variables(self.NAME_SCREEN, "info_answer_one")
             + pretty_print(self.associative_chaining.payload)
         )
 
     def start_game(self, instance):
         # Hide question label and show answer label
         if self.start_button.text.lower() == "start":
-            self.question_label.text = MESSAGE
+            self.question_label.text = self.get_message_with_variables(
+                self.NAME_SCREEN, "message_answer"
+            )
             self.answer_field.opacity = 1
             self.time_press_start = self.time
             self.start_button.text = "Stop"
+            self.info_label.text = ""
         # review answer
         elif self.start_button.text.lower() == "stop":
             self.answer_field.opacity = 0
@@ -160,11 +168,11 @@ class AssociativeChainingScreen(BaseGamaScreen):
             # hide and opacity start_button
             self.start_button.opacity = 0
             self.start_button.disabled = True
-            self.show_end_game_buttons()
+            self.show_end_game_buttons(self.NAME_SCREEN)
             self.__finished_message()
         else:
             raise ValueError(
-                f"Invalid button text: start_game.text = {self.start_game.text}"
+                f"Invalid button text: start_game.text = {self.start_button.text}"
             )
 
     def save_stats(self):

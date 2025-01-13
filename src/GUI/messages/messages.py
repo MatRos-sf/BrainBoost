@@ -9,6 +9,7 @@ def stats_message(points: int, level: int) -> str:
     return f"You earned {points} points at level {level}!\n"
 
 
+# TODO: Remove this file in the next major release
 def message_ends_game(
     points: int,
     level: int,

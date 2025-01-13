@@ -17,5 +17,5 @@ class TestMenuScreen(GraphicUnitTest):
         """Verifies that all widgets exist"""
         assert isinstance(self.menu_screen.result_keep, Button)
         assert isinstance(self.menu_screen.option2, Button)
-        assert isinstance(self.menu_screen.option3, Button)
-        assert isinstance(self.menu_screen.back_button, Button)
+        assert isinstance(self.menu_screen.settings_button, Button)
+        assert isinstance(self.menu_screen.logout_button, Button)

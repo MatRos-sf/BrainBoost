@@ -60,6 +60,11 @@ class GameManager:
         game_stats = self.current_session.stats.get(game_name.value)
         return game_stats.id
 
+    def get_language(self):
+        if not self.current_session:
+            return None
+        return self.current_session.language.value
+
     def update_point(self, point) -> None:
         """
         Update the current session with the provided attributes.

@@ -31,13 +31,13 @@
             pos_hint: {'center_x': 0.5, 'center_y': 0.5}
 
             GridLayout:
-                cols: 2
+                cols: 1
                 spacing: 10
                 size_hint: 1, 0.15
 
                 Label:
                     id: info_label
-                    text: "Info Label"
+                    text: "hello"
                     font_size: 18
                     halign: "center"
                     valign: "middle"
@@ -46,7 +46,6 @@
 
                 Label:
                     id: timer_label
-                    text: "Time left: 60s"
                     font_size: 18
                     halign: "center"
                     valign: "middle"
@@ -55,7 +54,6 @@
 
             Label:
                 id: question_label
-                text: ""
                 markup: True
                 font_size: 18
                 halign: "center"
@@ -74,7 +72,6 @@
 
             Button:
                 id: start_button
-                text: "Start"  # Initial button text
                 size_hint: 1, 0.25
                 background_color: 0.2, 0.6, 1, 1
                 on_press: root.start_game(self)
@@ -89,7 +86,6 @@
 
                 Button:
                     id: try_again_button
-                    text: "Try Again"
                     on_press: root.try_again(self)
                     size_hint: 0.5, 1
                     background_color: 0.2, 0.6, 1, 1
@@ -97,7 +93,6 @@
 
                 Button:
                     id: back_to_menu_button
-                    text: "Back to Menu"
                     on_press: root.back_to_menu(self)
                     size_hint: 0.5, 1
                     background_color: 0.8, 0.2, 0.2, 1

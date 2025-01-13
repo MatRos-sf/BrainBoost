@@ -7,8 +7,10 @@ from src.GUI.base_screen import BaseScreen
 
 
 class BaseGamaScreen(BaseScreen):
-    def __init__(self, session_manager: GameManager, **kwargs):
-        super(BaseGamaScreen, self).__init__(session_manager, **kwargs)
+    def __init__(self, session_manager: GameManager, translation, **kwargs):
+        super(BaseGamaScreen, self).__init__(
+            session_manager=session_manager, translation=translation, **kwargs
+        )
         self.timer_event: Optional[Clock] = None
         self.countdown_event: Optional[Clock] = None
         self.game = None
@@ -46,10 +48,17 @@ class BaseGamaScreen(BaseScreen):
         """Reset and restart the game"""
         self.start_new_game()
 
-    def show_end_game_buttons(self):
+    def show_end_game_buttons(self, name_screen: str):
         """Show the try again and back to menu buttons"""
         if hasattr(self, "buttons_layout"):
             self.buttons_layout.opacity = 1
+            self.try_again_button.text = self.get_label_with_variables(
+                name_screen, "try_again_button"
+            )
+            self.back_to_menu_button.text = self.get_label_with_variables(
+                name_screen, "back_to_menu_button"
+            )
+
         else:
             raise AttributeError("buttons_layout not implemented!")
 
