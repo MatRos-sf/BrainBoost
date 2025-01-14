@@ -27,9 +27,7 @@ class ResultKeeperScreen(BaseGamaScreen):
         **kwargs,
     ):
         super(ResultKeeperScreen, self).__init__(session_manager, translation, **kwargs)
-        print(
-            f"I'm here---------------------------------------------{self.translation}"
-        )
+
         self.result_keeper = None
         self.time_left = ResultKeeperScreen.TIME_LEFT  # 60 seconds for the game
         self.countdown = 3
