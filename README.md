@@ -21,6 +21,8 @@ pip install -r requirements.txt
 # Usage
 To launch the app, navigate to the src directory and run the main script:
 ```bash
+# int
+alembic upgrade head
 cd src
 python main.py
 ```

@@ -6,3 +6,4 @@ pre_commit==4.0.1
 SQLAlchemy==2.0.36
 alembic==1.14.0
 sqlmodel
+bcrypt
