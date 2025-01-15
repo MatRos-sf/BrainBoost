@@ -1,4 +1,5 @@
 import json
+import os.path
 from pathlib import Path
 
 from kivy.uix.boxlayout import BoxLayout
@@ -13,6 +14,8 @@ from ..db.session import GameManager
 from ..models.user import Login, User
 from ..user.session import verify_password
 from .base_screen import BaseScreen
+
+PATH_CREDENTIALS = os.path.join(Path.cwd(), ".credentials")
 
 
 class MessagePopup(Popup):
@@ -165,28 +168,30 @@ class LoginScreen(BaseScreen):
             )
 
     def save_credentials(self, username, password):
-        config_dir = Path.home() / ".brainboost"
-        config_dir.mkdir(exist_ok=True)
-
         credentials = {
             "username": username,
             "password": password,  # In production, this should be encrypted
         }
 
-        with open(config_dir / "credentials.json", "w") as f:
+        with open(PATH_CREDENTIALS, "w") as f:
             json.dump(credentials, f)
 
     def load_credentials(self):
-        config_file = Path.home() / ".brainboost" / "credentials.json"
-        if config_file.exists():
+        # config_file = Path.home() / ".brainboost" / "credentials.json"
+        # if config_file.exists():
+        if PATH_CREDENTIALS:
             try:
-                with open(config_file) as f:
+                with open(PATH_CREDENTIALS) as f:
                     credentials = json.load(f)
                     self.user_field.text = credentials.get("username", "")
                     self.password_field.text = credentials.get("password", "")
                     self.remember_me.active = True
             except (IOError, json.JSONDecodeError) as e:
                 print(f"Error loading credentials: {e}")
+        else:
+            # Create the file if it doesn't exist'
+            with open(PATH_CREDENTIALS, "a"):
+                pass
 
     def switch_to_create_account(self, instance) -> None:
         self.manager.current = "create_account"
@@ -216,7 +221,10 @@ class CreateAccountScreen(BaseScreen):
 
         # user field
         self.user_field = TextInput(
-            multiline=False, padding_y=(20, 20), size_hint=(1, 0.25)
+            multiline=False,
+            padding_y=(20, 20),
+            size_hint=(1, 0.25),
+            hint_text="Username",
         )
         self.user_field.bind(on_text_validate=self.on_user_field_enter)
         self.layout.add_widget(self.user_field)
@@ -227,6 +235,7 @@ class CreateAccountScreen(BaseScreen):
             padding=(20, 20, 20, 20),
             size_hint=(1, 0.25),
             password=True,
+            hint_text="Password",
         )
         self.password_field_one.bind(on_text_validate=self.on_password_one_enter)
         self.layout.add_widget(self.password_field_one)
@@ -236,6 +245,7 @@ class CreateAccountScreen(BaseScreen):
             padding=(20, 20, 20, 20),
             size_hint=(1, 0.25),
             password=True,
+            hint_text="Confirm Password",
         )
         self.password_field_two.bind(on_text_validate=self.create_account)
         self.layout.add_widget(self.password_field_two)
