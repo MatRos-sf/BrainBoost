@@ -12,9 +12,9 @@ from .menu import MenuScreen
 from .settings import SettingsScreen
 
 
-class MyApp(App):
+class BrainBoost(App):
     def __init__(self, database_url=DATABASE_URL, **kwargs):
-        super(MyApp, self).__init__(**kwargs)
+        super(BrainBoost, self).__init__(**kwargs)
         # Initialize database
         self.session_manager = GameManager(database_url)
         self.translation = Translator()
@@ -73,4 +73,4 @@ class MyApp(App):
 
 
 if __name__ == "__main__":
-    MyApp().run()
+    BrainBoost().run()
