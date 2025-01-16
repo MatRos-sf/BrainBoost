@@ -58,7 +58,7 @@ class MenuScreen(BaseScreen):
 
         self.add_widget(self.layout)
 
-    def on_enter(self) -> None:
+    def on_enter(self, *args) -> None:
         """
         Before entering screen:
             * update welcome message
@@ -69,7 +69,7 @@ class MenuScreen(BaseScreen):
         username = self.session_manager.current_session.username
         self.welcome_message.text = self.get_message_with_variables(
             "menu", "user_info", points=points, username=username
-        )  # f"Welcome {username}!\nPoints: {points}"
+        )
 
     def go_back(self, instance) -> None:
         del self.session_manager.current_session
@@ -83,7 +83,6 @@ class MenuScreen(BaseScreen):
     ):
         level = self.session_manager.get_level_game(game_name)
         game_id = self.session_manager.get_id_game(game_name)
-
         if level is None:
             # update PointModel
             self.session_manager.db.add_points_for_first_game(
@@ -94,8 +93,5 @@ class MenuScreen(BaseScreen):
             self.session_manager.db.update_record(model, game_id, {"level": 1})
             # Update level current session
             self.session_manager.update_level_of_game(game_name, 1)
-            # popup with information
-            self.init_first_game(screen_name)
 
-        else:
-            self.manager.current = screen_name
+        self.init_first_game(screen_name)

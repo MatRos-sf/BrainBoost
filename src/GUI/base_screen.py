@@ -92,13 +92,13 @@ class BaseScreen(Screen):
 
     def init_first_game(self, target_screen: str):
         """
-        The methods initial first game. First create new row in PointsModel then display window with information about game.
+        Display a short instruction message for the game
         Args:
             target_screen (str): The name 'target_screen' which will be displayed after pressing the close button.
         """
         popup = InstructionPopup(
-            title="Game result",
-            message="It's your first time ;) GL",
+            title=self.get_message_with_variables(target_screen, "title"),
+            message=self.get_message_with_variables(target_screen, "short_info"),
             manager=self.manager,
             target_screen=target_screen,
         )
