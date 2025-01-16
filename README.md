@@ -121,3 +121,6 @@ Simply execute the included script: `./run_app.sh`
 ---
 ## **Contribute**
 If you have suggestions or want to contribute to this project, feel free to reach out or create a pull request. Your feedback is welcome!
+
+
+
