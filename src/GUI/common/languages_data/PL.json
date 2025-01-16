@@ -63,7 +63,9 @@
             "invalid_input": "Odpowiedź musi być liczbą!",
             "time_up": "Koniec Gry - Czas dobiegł końca!\n",
             "defeated": "Koniec Gry - Straciłeś wszystkie życia.\n",
-            "stats_message": "Uzyskałeś {points} punktów i poziom {level}!\n"
+            "stats_message": "Uzyskałeś {points} punktów i poziom {level}!\n",
+            "short_info": "Zapamiętaj wynik działania, np. 2 + 1 = 3, a następnie odpowiedz na kolejne, używając zapamiętanej liczby. Gra kończy się po 3 błędach lub 60 sekundach. Za 10 poprawnych odpowiedzi poziom trudności rośnie. Powodzenia!",
+            "title": "Results Keeper"
         }
       },
     "associative_changing_game": {
@@ -74,12 +76,15 @@
             "start_button": "Start",
             "try_again_button": "Spróbuj ponownie",
             "back_to_menu_button": "Powrót do menu"
+
         },
         "messages": {
             "stats_message": "\nZdobyłeś {points} punktów.\nZapamiętałeś {correct_answers} rzeczowników, zapomniałeś {wrong_answers} rzeczowników, a pominąłeś {skip_answers}\n",
             "info_answer_one": "\nLista rzeczowników:\n",
             "message_start": "Czas ucieka, pośpiesz się! Zapamiętaj podane rzeczowniki, a następnie kliknij przycisk Start.",
-            "message_answer": "Proszę wprowadź listę zapamiętanych rzeczowników, oddzielając je przecinkami.\nJeśli nie znasz jakiegoś rzeczownika, możesz wpisać `-`.\nNa przykład, jeśli masz zapamiętać: pies, kot, wiatrak, ale pamiętasz tylko pies i wiatrak, możesz wpisać: `pies, -, wiatrak`, aby zdobyć 4 punkty, ale jeśli wpiszesz: `pies, kot`, zdobędziesz 2 punkty.\nPowodzenia!"
+            "message_answer": "Proszę wprowadź listę zapamiętanych rzeczowników, oddzielając je przecinkami.\nJeśli nie znasz jakiegoś rzeczownika, możesz wpisać `-`.\nNa przykład, jeśli masz zapamiętać: pies, kot, wiatrak, ale pamiętasz tylko pies i wiatrak, możesz wpisać: `pies, -, wiatrak`, aby zdobyć 4 punkty, ale jeśli wpiszesz: `pies, kot`, zdobędziesz 2 punkty.\nPowodzenia!",
+            "short_info": "Zapamiętaj listę rzeczowników, używając skojarzeń i żywych obrazów. Wpisz je w kolejności, np. Koń, Słoń, Oko. Możesz użyć „-”, jeśli czegoś nie pamiętasz. Lista wydłuża się wraz z poziomem. Powodzenia!",
+            "title": "Łańcuchowa metoda skojarzeń"
         }
 
       }
